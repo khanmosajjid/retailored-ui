@@ -834,7 +834,7 @@ const CreateOrder = () => {
 
     return (
         <div className="flex flex-column p-3 lg:p-5 mb-5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            {(isConfirmingOrder) && <FullPageLoader />}
+            {isConfirmingOrder && <FullPageLoader />}
             <h2 className="text-2xl m-0 mb-3">Create Order</h2>
             <Card className="mb-4">
                 <div className="flex flex-column gap-1 surface-50 border-round">
@@ -845,15 +845,7 @@ const CreateOrder = () => {
                                     <i className="pi pi-user text-500"></i>
                                     <span className="font-bold">{getCustomerFullName(selectedCustomer)}</span>
                                 </div>
-                                <Button 
-                                    icon="pi pi-times" 
-                                    rounded 
-                                    text 
-                                    severity="secondary"
-                                    tooltip="Change customer"
-                                    tooltipOptions={{ position: 'top' }}
-                                    onClick={handleClearCustomer}
-                                />
+                                <Button icon="pi pi-times" rounded text severity="secondary" tooltip="Change customer" tooltipOptions={{ position: 'top' }} onClick={handleClearCustomer} />
                             </div>
                             <div className="flex align-items-center gap-2">
                                 <i className="pi pi-phone text-500"></i>
@@ -861,12 +853,7 @@ const CreateOrder = () => {
                             </div>
                         </div>
                     ) : (
-                        <Button 
-                            label="Select Customer" 
-                            icon="pi pi-user-plus" 
-                            className="p-button-outlined w-full" 
-                            onClick={() => setShowCustomerDialog(true)}
-                        />
+                        <Button label="Select Customer" icon="pi pi-user-plus" className="p-button-outlined w-full" onClick={() => setShowCustomerDialog(true)} />
                     )}
                 </div>
             </Card>
@@ -876,13 +863,7 @@ const CreateOrder = () => {
             <div className="main-selected-outfit mb-5">
                 <div className="flex justify-content-between align-items-center mb-3">
                     <h3 className="text-lg m-0">Selected Outfits</h3>
-                    <Button 
-                        label="Add Outfit" 
-                        icon="pi pi-plus" 
-                        onClick={() => setShowOutfitSelectionDialog(true)}
-                        size="small"
-                        disabled={!selectedCustomer}
-                    />
+                    <Button label="Add Outfit" icon="pi pi-plus" onClick={() => setShowOutfitSelectionDialog(true)} size="small" disabled={!selectedCustomer} />
                 </div>
 
                 {selectedGarments.length > 0 ? (
@@ -896,13 +877,7 @@ const CreateOrder = () => {
                                             <div className="flex justify-content-between align-items-center">
                                                 <span className="font-medium">{garment.name}</span>
                                                 <div className="flex">
-                                                    <Button
-                                                        icon="pi pi-copy"
-                                                        rounded
-                                                        text
-                                                        severity="secondary"
-                                                        onClick={() => handleCloneGarment(garment, instanceId)}
-                                                    />
+                                                    <Button icon="pi pi-copy" rounded text severity="secondary" onClick={() => handleCloneGarment(garment, instanceId)} />
                                                     <Button
                                                         icon="pi pi-pencil"
                                                         rounded
@@ -922,20 +897,42 @@ const CreateOrder = () => {
                                                         text
                                                         severity="danger"
                                                         onClick={() => {
-                                                            setSelectedGarments(prevSg => prevSg.filter(item => item.instanceId !== instanceId));
-                                                            setGarmentRefNames(prev => { const newState = {...prev}; delete newState[instanceId]; return newState; });
-                                                            setAllMeasurements(prev => { const newState = {...prev}; delete newState[instanceId]; return newState; });
-                                                            setIsMesurementSaved(prev => { const newState = {...prev}; delete newState[instanceId]; return newState; });
-                                                            setStitchOptions(prev => { const newState = {...prev}; delete newState[instanceId]; return newState; });
-                                                            setItemsData(prev => { const newState = {...prev}; delete newState[instanceId]; return newState; });
-                                                            setGarmentTotals(prev => { const newState = {...prev}; delete newState[instanceId]; return newState; });
+                                                            setSelectedGarments((prevSg) => prevSg.filter((item) => item.instanceId !== instanceId));
+                                                            setGarmentRefNames((prev) => {
+                                                                const newState = { ...prev };
+                                                                delete newState[instanceId];
+                                                                return newState;
+                                                            });
+                                                            setAllMeasurements((prev) => {
+                                                                const newState = { ...prev };
+                                                                delete newState[instanceId];
+                                                                return newState;
+                                                            });
+                                                            setIsMesurementSaved((prev) => {
+                                                                const newState = { ...prev };
+                                                                delete newState[instanceId];
+                                                                return newState;
+                                                            });
+                                                            setStitchOptions((prev) => {
+                                                                const newState = { ...prev };
+                                                                delete newState[instanceId];
+                                                                return newState;
+                                                            });
+                                                            setItemsData((prev) => {
+                                                                const newState = { ...prev };
+                                                                delete newState[instanceId];
+                                                                return newState;
+                                                            });
+                                                            setGarmentTotals((prev) => {
+                                                                const newState = { ...prev };
+                                                                delete newState[instanceId];
+                                                                return newState;
+                                                            });
                                                         }}
                                                     />
                                                 </div>
                                             </div>
-                                            {selectedCustomer && (
-                                                <small className="text-500">Ref: {garmentRefNames[instanceId] || ''}</small>
-                                            )}
+                                            {selectedCustomer && <small className="text-500">Ref: {garmentRefNames[instanceId] || ''}</small>}
                                         </div>
                                     </Card>
                                 </div>
@@ -950,7 +947,7 @@ const CreateOrder = () => {
                 )}
             </div>
 
-            <Sidebar 
+            <Sidebar
                 visible={showCustomerDialog}
                 onHide={() => {
                     setShowCustomerDialog(false);
@@ -958,7 +955,7 @@ const CreateOrder = () => {
                     setCustomerPage(1);
                 }}
                 position="bottom"
-                style={{ 
+                style={{
                     width: '100vw',
                     height: '80vh',
                     maxHeight: '80vh',
@@ -976,20 +973,15 @@ const CreateOrder = () => {
             >
                 <div className="flex flex-column h-full">
                     <div className="p-3 border-bottom-1 surface-border">
-                          <span className="p-input-icon-left p-input-icon-right w-full">
+                        <span className="p-input-icon-left p-input-icon-right w-full">
                             <i className="pi pi-search" />
-                            <InputText
-                                value={customerSearch}
-                                onChange={handleCustomerSearch}
-                                placeholder="Search"
-                                className="w-full"
-                            />
+                            <InputText value={customerSearch} onChange={handleCustomerSearch} placeholder="Search" className="w-full" />
                             {customerSearch && (
-                                <i 
-                                    className="pi pi-times cursor-pointer" 
+                                <i
+                                    className="pi pi-times cursor-pointer"
                                     onClick={() => {
-                                    setCustomerSearch('');
-                                    fetchCustomers('', 1);
+                                        setCustomerSearch('');
+                                        fetchCustomers('', 1);
                                     }}
                                 />
                             )}
@@ -997,27 +989,25 @@ const CreateOrder = () => {
                     </div>
 
                     <div className="flex-grow-1 overflow-y-auto">
-                        {allCustomers.map(customer => (
-                            <div 
-                                key={customer.id} 
-                                className={`p-3 border-bottom-1 surface-border cursor-pointer flex justify-content-between align-items-center ${
-                                    selectedCustomer?.id === customer.id ? 'bg-blue-50' : 'hover:surface-50'
-                                }`}
-                                onClick={() => handleSelectCustomer({
-                                    id: customer.id,
-                                    fname: customer.fname,
-                                    lname: customer.lname,
-                                    mobileNumber: customer.mobileNumber,
-                                    admsite_code: customer.admsite_code
-                                })}
+                        {allCustomers.map((customer) => (
+                            <div
+                                key={customer.id}
+                                className={`p-3 border-bottom-1 surface-border cursor-pointer flex justify-content-between align-items-center ${selectedCustomer?.id === customer.id ? 'bg-blue-50' : 'hover:surface-50'}`}
+                                onClick={() =>
+                                    handleSelectCustomer({
+                                        id: customer.id,
+                                        fname: customer.fname,
+                                        lname: customer.lname,
+                                        mobileNumber: customer.mobileNumber,
+                                        admsite_code: customer.admsite_code
+                                    })
+                                }
                             >
                                 <div className="flex-1">
                                     <div className="font-medium">{getCustomerFullName(customer)}</div>
                                     <div className="text-sm text-500">{customer.mobileNumber}</div>
                                 </div>
-                                {selectedCustomer?.id === customer.id && (
-                                    <i className="pi pi-check text-primary"></i>
-                                )}
+                                {selectedCustomer?.id === customer.id && <i className="pi pi-check text-primary"></i>}
                             </div>
                         ))}
 
@@ -1033,21 +1023,14 @@ const CreateOrder = () => {
                             </div>
                         )}
 
-                        {!isLoadingCustomers && allCustomers.length === 0 && (
-                            <div className="p-5 text-center text-500">
-                                No customers found
-                            </div>
-                        )}
+                        {!isLoadingCustomers && allCustomers.length === 0 && <div className="p-5 text-center text-500">No customers found</div>}
 
-                        {!isLoadingCustomers && allCustomers.length > 0 && customerSearch && 
-                            allCustomers.filter(c => 
-                                getCustomerFullName(c).toLowerCase().includes(customerSearch.toLowerCase()) || 
-                                c.mobileNumber.includes(customerSearch)
-                            ).length === 0 && (
-                            <div className="p-5 text-center text-500">
-                                No matching customers found
-                            </div>
-                        )}
+                        {!isLoadingCustomers &&
+                            allCustomers.length > 0 &&
+                            customerSearch &&
+                            allCustomers.filter((c) => getCustomerFullName(c).toLowerCase().includes(customerSearch.toLowerCase()) || c.mobileNumber.includes(customerSearch)).length === 0 && (
+                                <div className="p-5 text-center text-500">No matching customers found</div>
+                            )}
                     </div>
                 </div>
             </Sidebar>
@@ -1056,7 +1039,7 @@ const CreateOrder = () => {
                 visible={showOutfitSelectionDialog}
                 onHide={() => setShowOutfitSelectionDialog(false)}
                 position="bottom"
-                style={{ 
+                style={{
                     width: '100vw',
                     height: '68vh',
                     maxHeight: '68vh',
@@ -1071,24 +1054,19 @@ const CreateOrder = () => {
                     </div>
                 }
                 blockScroll
-                >
+            >
                 <div className="flex flex-column h-full">
                     <div className="p-3 border-bottom-1 surface-border">
                         <span className="p-input-icon-left p-input-icon-right w-full">
                             <i className="pi pi-search" />
-                            <InputText
-                                value={materialSearch}
-                                onChange={handleMaterialSearch}
-                                placeholder="Search"
-                                className="w-full"
-                            />
+                            <InputText value={materialSearch} onChange={handleMaterialSearch} placeholder="Search" className="w-full" />
 
                             {materialSearch && (
-                                <i 
-                                    className="pi pi-times cursor-pointer" 
+                                <i
+                                    className="pi pi-times cursor-pointer"
                                     onClick={() => {
-                                    setMaterialSearch('');
-                                    fetchMaterials('', 1);
+                                        setMaterialSearch('');
+                                        fetchMaterials('', 1);
                                     }}
                                 />
                             )}
@@ -1097,7 +1075,7 @@ const CreateOrder = () => {
 
                     <div className="flex flex-column" style={{ overflowY: 'auto' }}>
                         {materials.map((material) => (
-                            <div 
+                            <div
                                 key={material.id}
                                 className="flex justify-content-between align-items-center p-3 border-bottom-1 surface-border cursor-pointer hover:surface-100 transition-duration-150"
                                 onClick={() => handleOutfitSelection(material)}
@@ -1109,18 +1087,14 @@ const CreateOrder = () => {
                                 <i className="pi pi-plus-circle text-2xl" />
                             </div>
                         ))}
-                        
-                        {materials.length === 0 && (
-                        <div className="p-5 text-center text-500">
-                            No outfits available
-                        </div>
-                        )}
+
+                        {materials.length === 0 && <div className="p-5 text-center text-500">No outfits available</div>}
                     </div>
                 </div>
             </Sidebar>
 
             <Dialog
-                header='Create Order'
+                header="Create Order"
                 visible={showCreateDialog}
                 onHide={() => {
                     setShowCreateDialog(false);
@@ -1134,7 +1108,7 @@ const CreateOrder = () => {
                 footer={dialogFooter}
             >
                 <div className="p-fluid">
-                     <div className="field my-4">
+                    <div className="field my-4">
                         <div className="flex justify-content-between align-items-center">
                             <h4 className="m-0 text-900 font-medium">{currentGarment?.name}</h4>
                             {currentGarment && currentInstanceId && (
@@ -1142,31 +1116,13 @@ const CreateOrder = () => {
                                     {editingRefName[currentInstanceId] ? (
                                         <>
                                             <small className="text-500">Ref:</small>
-                                            <InputText 
-                                                value={garmentRefNames[currentInstanceId] || ''}
-                                                onChange={(e) => handleRefNameChange(currentInstanceId, e.target.value)}
-                                                className="p-inputtext-sm"
-                                                style={{ width: '100px' }}
-                                                autoFocus
-                                            />
-                                            <Button 
-                                                icon="pi pi-check" 
-                                                rounded 
-                                                text 
-                                                className="p-button-sm p-button-success"
-                                                onClick={() => toggleEditRefName(currentInstanceId)}
-                                            />
+                                            <InputText value={garmentRefNames[currentInstanceId] || ''} onChange={(e) => handleRefNameChange(currentInstanceId, e.target.value)} className="p-inputtext-sm" style={{ width: '100px' }} autoFocus />
+                                            <Button icon="pi pi-check" rounded text className="p-button-sm p-button-success" onClick={() => toggleEditRefName(currentInstanceId)} />
                                         </>
                                     ) : (
                                         <>
                                             <small className="text-500">Ref: {garmentRefNames[currentInstanceId] || ''}</small>
-                                            <Button 
-                                                icon="pi pi-pencil" 
-                                                rounded 
-                                                text 
-                                                className="p-button-sm"
-                                                onClick={() => toggleEditRefName(currentInstanceId)}
-                                            />
+                                            <Button icon="pi pi-pencil" rounded text className="p-button-sm" onClick={() => toggleEditRefName(currentInstanceId)} />
                                         </>
                                     )}
                                 </div>
@@ -1178,15 +1134,15 @@ const CreateOrder = () => {
                         <label>Type</label>
                         <div className="flex gap-3 mt-2">
                             <div className="flex align-items-center">
-                                <RadioButton 
-                                    inputId="stitching" 
-                                    name="type" 
-                                    value="stitching" 
+                                <RadioButton
+                                    inputId="stitching"
+                                    name="type"
+                                    value="stitching"
                                     onChange={(e) => {
                                         setType(e.value);
                                         if (currentGarment && currentInstanceId) {
                                             const stitchingPrice = getMaterialPrice(currentGarment, 'stitching');
-                                            setItemsData(prev => ({
+                                            setItemsData((prev) => ({
                                                 ...prev,
                                                 [currentInstanceId]: {
                                                     ...prev[currentInstanceId],
@@ -1198,18 +1154,20 @@ const CreateOrder = () => {
                                     }}
                                     checked={type === 'stitching'}
                                 />
-                                <label htmlFor="stitching" className="ml-2">Stitching</label>
+                                <label htmlFor="stitching" className="ml-2">
+                                    Stitching
+                                </label>
                             </div>
                             <div className="flex align-items-center">
-                                <RadioButton 
+                                <RadioButton
                                     inputId="alteration"
-                                    name="type" 
-                                    value="alteration" 
+                                    name="type"
+                                    value="alteration"
                                     onChange={(e) => {
                                         setType(e.value);
                                         if (currentGarment && currentInstanceId) {
                                             const alterationPrice = getMaterialPrice(currentGarment, 'alteration');
-                                            setItemsData(prev => ({
+                                            setItemsData((prev) => ({
                                                 ...prev,
                                                 [currentInstanceId]: {
                                                     ...prev[currentInstanceId],
@@ -1221,7 +1179,9 @@ const CreateOrder = () => {
                                     }}
                                     checked={type === 'alteration'}
                                 />
-                                <label htmlFor="alteration" className="ml-2">Alteration</label>
+                                <label htmlFor="alteration" className="ml-2">
+                                    Alteration
+                                </label>
                             </div>
                         </div>
                     </div>
@@ -1229,12 +1189,12 @@ const CreateOrder = () => {
                     <div className="flex flex-column gap-3 mb-4">
                         <div className="flex flex-column gap-2">
                             <div className="flex align-items-center">
-                                <span className="font-medium w-9">Add Measurements</span>
+                                <span className="font-medium w-2">Add Measurements</span>
                                 <div className="w-3 text-right">
                                     {currentInstanceId && isMesurementSaved[currentInstanceId] ? (
                                         <Button
                                             label="Edit"
-                                            icon={isAddingMeasurements ? "pi pi-spinner pi-spin" : "pi pi-pencil"}
+                                            icon={isAddingMeasurements ? 'pi pi-spinner pi-spin' : 'pi pi-pencil'}
                                             onClick={() => {
                                                 if (currentGarment && currentInstanceId) {
                                                     openMeasurementDialog(currentGarment, currentInstanceId);
@@ -1246,7 +1206,7 @@ const CreateOrder = () => {
                                     ) : (
                                         <Button
                                             label="Add"
-                                            icon={isAddingMeasurements ? "pi pi-spinner pi-spin" : "pi pi-plus"}
+                                            icon={isAddingMeasurements ? 'pi pi-spinner pi-spin' : 'pi pi-plus'}
                                             onClick={() => {
                                                 if (currentGarment && currentInstanceId) {
                                                     openMeasurementDialog(currentGarment, currentInstanceId);
@@ -1262,11 +1222,11 @@ const CreateOrder = () => {
 
                         <div className="flex flex-column gap-2">
                             <div className="flex align-items-center">
-                                <span className="font-medium w-9">Stitch Options</span>
+                                <span className="font-medium w-2">Stitch Options</span>
                                 <div className="w-3 text-right">
-                                    <Button 
-                                        label="Add" 
-                                        icon="pi pi-plus" 
+                                    <Button
+                                        label="Add"
+                                        icon="pi pi-plus"
                                         onClick={() => {
                                             if (currentInstanceId) {
                                                 const currentOptions = stitchOptions[currentInstanceId] || {};
@@ -1287,14 +1247,16 @@ const CreateOrder = () => {
                     </div>
 
                     <div className="field mb-4">
-                        <label htmlFor="instructions">Special Instructions</label>
-                        <InputTextarea 
-                            id="instructions" 
-                            rows={3} 
+                        <label htmlFor="instructions" className="font-medium">
+                            Special Instructions
+                        </label>
+                        <InputTextarea
+                            id="instructions"
+                            rows={3}
                             value={currentInstanceId ? itemsData[currentInstanceId]?.specialInstructions || '' : ''}
                             onChange={(e) => {
                                 if (currentInstanceId) {
-                                    setItemsData(prev => ({
+                                    setItemsData((prev) => ({
                                         ...prev,
                                         [currentInstanceId]: {
                                             ...prev[currentInstanceId],
@@ -1309,16 +1271,11 @@ const CreateOrder = () => {
                     </div>
 
                     <div className="flex flex-column gap-4 mb-4">
-                        <Button
-                            icon="pi pi-microphone"
-                            label="Record Audio"
-                            className="p-button-outlined w-7"
-                            disabled
-                        />
+                        <Button icon="pi pi-microphone" label="Record Audio" className="p-button-outlined w-7" disabled />
                         <div>
                             <input
                                 type="file"
-                                ref={ref => setImageUploadRef(ref)}
+                                ref={(ref) => setImageUploadRef(ref)}
                                 onChange={(e) => {
                                     if (currentInstanceId) {
                                         handleFileUpload(e, currentInstanceId);
@@ -1328,12 +1285,7 @@ const CreateOrder = () => {
                                 accept="image/*"
                                 style={{ display: 'none' }}
                             />
-                            <Button
-                                icon="pi pi-image"
-                                label="Upload Image"
-                                className="p-button-outlined w-7"
-                                onClick={() => setShowImageSourceDialog(true)}
-                            />
+                            <Button icon="pi pi-image" label="Upload Image" className="p-button-outlined w-7" onClick={() => setShowImageSourceDialog(true)} />
                             <p className="mt-1 text-sm text-500">
                                 <small>Max 1MB per image (larger images will be compressed)</small>
                             </p>
@@ -1344,10 +1296,10 @@ const CreateOrder = () => {
                                 {itemsData[currentInstanceId].uploadedImages.map((image, index) => (
                                     <div key={index} className="relative flex-shrink-0" style={{ width: '120px' }}>
                                         <div className="border-1 surface-border border-round p-2 h-full">
-                                            <img 
-                                                src={image} 
-                                                alt={`Uploaded ${index + 1}`} 
-                                                className="w-full border-round cursor-pointer" 
+                                            <img
+                                                src={image}
+                                                alt={`Uploaded ${index + 1}`}
+                                                className="w-full border-round cursor-pointer"
                                                 style={{ height: '80px', objectFit: 'cover' }}
                                                 onClick={() => {
                                                     setActiveIndex(index);
@@ -1361,7 +1313,7 @@ const CreateOrder = () => {
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     if (currentInstanceId) {
-                                                        setItemsData(prev => ({
+                                                        setItemsData((prev) => ({
                                                             ...prev,
                                                             [currentInstanceId]: {
                                                                 ...prev[currentInstanceId],
@@ -1378,7 +1330,9 @@ const CreateOrder = () => {
                         )}
                     </div>
                     <div className="field mb-4">
-                        <label htmlFor="inspiration">Add Inspiration</label>
+                        <label htmlFor="inspiration" className="font-medium">
+                            Add Inspiration
+                        </label>
                         <span className="p-input-icon-left w-full">
                             <i className="pi pi-link" />
                             <InputText
@@ -1386,7 +1340,7 @@ const CreateOrder = () => {
                                 value={currentInstanceId ? itemsData[currentInstanceId]?.inspiration || '' : ''}
                                 onChange={(e) => {
                                     if (currentInstanceId) {
-                                        setItemsData(prev => ({
+                                        setItemsData((prev) => ({
                                             ...prev,
                                             [currentInstanceId]: {
                                                 ...prev[currentInstanceId],
@@ -1403,13 +1357,15 @@ const CreateOrder = () => {
 
                     <div className="flex flex-column gap-3 mb-4">
                         <div className="field">
-                            <label htmlFor="deliveryDate">Delivery Date</label>
+                            <label htmlFor="deliveryDate" className="font-medium">
+                                Delivery Date
+                            </label>
                             <Calendar
                                 id="deliveryDate"
                                 value={currentInstanceId ? itemsData[currentInstanceId]?.deliveryDate || null : null}
                                 onChange={(e) => {
                                     if (currentInstanceId) {
-                                        setItemsData(prev => ({
+                                        setItemsData((prev) => ({
                                             ...prev,
                                             [currentInstanceId]: {
                                                 ...prev[currentInstanceId],
@@ -1429,14 +1385,16 @@ const CreateOrder = () => {
                             />
                         </div>
 
-                         <div className="field">
-                            <label htmlFor="trialDate">Trial Date</label>
+                        <div className="field">
+                            <label htmlFor="trialDate" className="font-medium">
+                                Trial Date
+                            </label>
                             <Calendar
                                 id="trialDate"
                                 value={currentInstanceId ? itemsData[currentInstanceId]?.trialDate || null : null}
                                 onChange={(e) => {
                                     if (currentInstanceId) {
-                                        setItemsData(prev => ({
+                                        setItemsData((prev) => ({
                                             ...prev,
                                             [currentInstanceId]: {
                                                 ...prev[currentInstanceId],
@@ -1464,7 +1422,7 @@ const CreateOrder = () => {
                                 checked={currentInstanceId ? itemsData[currentInstanceId]?.isPriority || false : false}
                                 onChange={(e) => {
                                     if (currentInstanceId) {
-                                        setItemsData(prev => ({
+                                        setItemsData((prev) => ({
                                             ...prev,
                                             [currentInstanceId]: {
                                                 ...prev[currentInstanceId],
@@ -1474,7 +1432,9 @@ const CreateOrder = () => {
                                     }
                                 }}
                             />
-                            <label htmlFor="priority" className="ml-2 mb-0">Prioritize Order</label>
+                            <label htmlFor="priority" className="ml-2 mb-0 font-medium">
+                                Prioritize Order
+                            </label>
                         </div>
                     </div>
 
@@ -1482,27 +1442,29 @@ const CreateOrder = () => {
 
                     <div className="flex flex-column gap-3">
                         <div className="field">
-                            <label htmlFor="price">Stitching Price (₹)</label>
+                            <label htmlFor="price" className="font-medium">
+                                Stitching Price (₹)
+                            </label>
                             <InputNumber
                                 id="price"
                                 value={currentInstanceId ? itemsData[currentInstanceId]?.stitchingPrice || 0 : 0}
                                 onValueChange={(e) => {
-                                if (currentInstanceId) {
-                                    setItemsData(prev => ({
-                                    ...prev,
-                                    [currentInstanceId]: {
-                                        ...prev[currentInstanceId],
-                                        stitchingPrice: e.value || 0
+                                    if (currentInstanceId) {
+                                        setItemsData((prev) => ({
+                                            ...prev,
+                                            [currentInstanceId]: {
+                                                ...prev[currentInstanceId],
+                                                stitchingPrice: e.value || 0
+                                            }
+                                        }));
                                     }
-                                    }));
-                                }
                                 }}
                                 onFocus={(e) => {
-                                if ((currentInstanceId ? itemsData[currentInstanceId]?.stitchingPrice || 0 : 0) === 0) {
-                                    setTimeout(() => {
-                                    e.target.select();
-                                    }, 0);
-                                }
+                                    if ((currentInstanceId ? itemsData[currentInstanceId]?.stitchingPrice || 0 : 0) === 0) {
+                                        setTimeout(() => {
+                                            e.target.select();
+                                        }, 0);
+                                    }
                                 }}
                                 mode="currency"
                                 currency="INR"
@@ -1515,41 +1477,34 @@ const CreateOrder = () => {
                         </div>
 
                         <div className="field">
-                            <Button
-                                label="Add Additional Cost"
-                                icon="pi pi-plus"
-                                className="p-button-outlined w-8"
-                                onClick={() => setShowAddCostDialog(true)}
-                            />
+                            <Button label="Add Additional Cost" icon="pi pi-plus" className="p-button-outlined w-8" onClick={() => setShowAddCostDialog(true)} />
                         </div>
                     </div>
 
                     <div className="surface-50 p-3 border-round mt-4">
                         <h5 className="mt-0 mb-3">Price Breakup</h5>
                         <Divider className="my-2" />
-                        
+
                         {currentInstanceId && (
                             <>
                                 <div className="flex justify-content-between align-items-center mb-3">
                                     <span className="text-600">Stitching Price</span>
-                                    <span>
-                                        ₹{(itemsData[currentInstanceId]?.stitchingPrice || 0).toFixed(2)}
-                                    </span>
+                                    <span>₹{(itemsData[currentInstanceId]?.stitchingPrice || 0).toFixed(2)}</span>
                                 </div>
 
                                 {itemsData[currentInstanceId]?.additionalCosts?.map((cost) => (
                                     <div key={cost.id} className="flex justify-content-between align-items-center">
                                         <div className="flex align-items-center gap-2">
                                             <span className="text-600">{cost.description}</span>
-                                            <Button 
-                                                icon="pi pi-trash" 
-                                                className="p-button-rounded p-button-text p-button-danger p-button-sm" 
+                                            <Button
+                                                icon="pi pi-trash"
+                                                className="p-button-rounded p-button-text p-button-danger p-button-sm"
                                                 onClick={() => {
-                                                    setItemsData(prev => ({
+                                                    setItemsData((prev) => ({
                                                         ...prev,
                                                         [currentInstanceId]: {
                                                             ...prev[currentInstanceId],
-                                                            additionalCosts: prev[currentInstanceId].additionalCosts.filter(c => c.id !== cost.id)
+                                                            additionalCosts: prev[currentInstanceId].additionalCosts.filter((c) => c.id !== cost.id)
                                                         }
                                                     }));
                                                 }}
@@ -1558,14 +1513,12 @@ const CreateOrder = () => {
                                         <span>₹{cost.amount.toFixed(2)}</span>
                                     </div>
                                 ))}
-                                
+
                                 <Divider className="my-2" />
-                                
+
                                 <div className="flex justify-content-between align-items-center font-bold">
                                     <span className="text-600">Total:</span>
-                                    <span>
-                                        ₹{(garmentTotals[currentInstanceId] || 0).toFixed(2)}
-                                    </span>
+                                    <span>₹{(garmentTotals[currentInstanceId] || 0).toFixed(2)}</span>
                                 </div>
                             </>
                         )}
@@ -1573,7 +1526,7 @@ const CreateOrder = () => {
                 </div>
             </Dialog>
 
-            <Dialog 
+            <Dialog
                 header={`${currentGarment?.name} Measurements`}
                 visible={visible}
                 onHide={() => setVisible(false)}
@@ -1585,49 +1538,38 @@ const CreateOrder = () => {
             >
                 <div className="p-fluid mt-4">
                     {isLoadingMeasurements ? (
-                    <div className="flex justify-content-center p-5">
-                        <i className="pi pi-spinner pi-spin"></i>
-                    </div>
-                    ) : (
-                    measurementData
-                        .sort((a, b) => a.seq - b.seq)
-                        .map((master) => (
-                        <div key={master.id} className="field mb-4">
-                            <label htmlFor={master.measurement_name} className="block mb-2 font-medium">
-                            {master.measurement_name} ({master.data_type})
-                            </label>
-                            {master.data_type === 'number' ? (
-                            <InputNumber 
-                                id={master.measurement_name}
-                                value={currentMeasurements[master.measurement_name]?.val ? parseFloat(currentMeasurements[master.measurement_name].val!) : null}
-                                onChange={(e) => handleMeasurementChange(
-                                master.measurement_name,
-                                e.value?.toString() || ''
-                                )}
-                                mode="decimal" 
-                                min={0} 
-                                className="w-full"
-                            />
-                            ) : (
-                            <InputText
-                                id={master.measurement_name}
-                                value={currentMeasurements[master.measurement_name]?.val || ''}
-                                onChange={(e) => handleMeasurementChange(
-                                master.measurement_name,
-                                e.target.value
-                                )}
-                                className="w-full"
-                            />
-                            )}
+                        <div className="flex justify-content-center p-5">
+                            <i className="pi pi-spinner pi-spin"></i>
                         </div>
-                        ))
+                    ) : (
+                        measurementData
+                            .sort((a, b) => a.seq - b.seq)
+                            .map((master) => (
+                                <div key={master.id} className="field mb-4">
+                                    <label htmlFor={master.measurement_name} className="block mb-2 font-medium">
+                                        {master.measurement_name} ({master.data_type})
+                                    </label>
+                                    {master.data_type === 'number' ? (
+                                        <InputNumber
+                                            id={master.measurement_name}
+                                            value={currentMeasurements[master.measurement_name]?.val ? parseFloat(currentMeasurements[master.measurement_name].val!) : null}
+                                            onChange={(e) => handleMeasurementChange(master.measurement_name, e.value?.toString() || '')}
+                                            mode="decimal"
+                                            min={0}
+                                            className="w-full"
+                                        />
+                                    ) : (
+                                        <InputText id={master.measurement_name} value={currentMeasurements[master.measurement_name]?.val || ''} onChange={(e) => handleMeasurementChange(master.measurement_name, e.target.value)} className="w-full" />
+                                    )}
+                                </div>
+                            ))
                     )}
                 </div>
             </Dialog>
 
-            <Dialog 
-                header="Stitch Options" 
-                visible={showStitchOptionsDialog} 
+            <Dialog
+                header="Stitch Options"
+                visible={showStitchOptionsDialog}
                 maximized={isMaximized}
                 onMaximize={(e) => setIsMaximized(e.maximized)}
                 footer={stitchFooter}
@@ -1640,39 +1582,27 @@ const CreateOrder = () => {
                         <div className="surface-100 p-3 border-round mb-3">
                             <h5 className="m-0 font-medium">Top</h5>
                         </div>
-                        
+
                         <div className="field mb-4">
                             <h5 className="m-0 mb-3">Collar</h5>
                             <div className="flex flex-wrap gap-3">
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="collar1" 
-                                        name="collar" 
-                                        value="Mandarin" 
-                                        onChange={(e) => setCollarOption(e.value)} 
-                                        checked={collarOption === 'Mandarin'} 
-                                    />
-                                    <label htmlFor="collar1" className="ml-2">Mandarin</label>
+                                    <RadioButton inputId="collar1" name="collar" value="Mandarin" onChange={(e) => setCollarOption(e.value)} checked={collarOption === 'Mandarin'} />
+                                    <label htmlFor="collar1" className="ml-2">
+                                        Mandarin
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="collar2" 
-                                        name="collar" 
-                                        value="Stand" 
-                                        onChange={(e) => setCollarOption(e.value)} 
-                                        checked={collarOption === 'Stand'} 
-                                    />
-                                    <label htmlFor="collar2" className="ml-2">Stand</label>
+                                    <RadioButton inputId="collar2" name="collar" value="Stand" onChange={(e) => setCollarOption(e.value)} checked={collarOption === 'Stand'} />
+                                    <label htmlFor="collar2" className="ml-2">
+                                        Stand
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="collar3" 
-                                        name="collar"
-                                        value="Classic" 
-                                        onChange={(e) => setCollarOption(e.value)} 
-                                        checked={collarOption === 'Classic'} 
-                                    />
-                                    <label htmlFor="collar3" className="ml-2">Classic</label>
+                                    <RadioButton inputId="collar3" name="collar" value="Classic" onChange={(e) => setCollarOption(e.value)} checked={collarOption === 'Classic'} />
+                                    <label htmlFor="collar3" className="ml-2">
+                                        Classic
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1683,34 +1613,22 @@ const CreateOrder = () => {
                             <h5 className="m-0 mb-3">Pockets</h5>
                             <div className="flex flex-wrap gap-3">
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="pocket1" 
-                                        name="pocket" 
-                                        value="Straight" 
-                                        onChange={(e) => setPocketOption(e.value)} 
-                                        checked={pocketOption === 'Straight'} 
-                                    />
-                                    <label htmlFor="pocket1" className="ml-2">Straight</label>
+                                    <RadioButton inputId="pocket1" name="pocket" value="Straight" onChange={(e) => setPocketOption(e.value)} checked={pocketOption === 'Straight'} />
+                                    <label htmlFor="pocket1" className="ml-2">
+                                        Straight
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="pocket2" 
-                                        name="pocket" 
-                                        value="Slant" 
-                                        onChange={(e) => setPocketOption(e.value)} 
-                                        checked={pocketOption === 'Slant'} 
-                                    />
-                                    <label htmlFor="pocket2" className="ml-2">Slant</label>
+                                    <RadioButton inputId="pocket2" name="pocket" value="Slant" onChange={(e) => setPocketOption(e.value)} checked={pocketOption === 'Slant'} />
+                                    <label htmlFor="pocket2" className="ml-2">
+                                        Slant
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="pocket3" 
-                                        name="pocket" 
-                                        value="Patch" 
-                                        onChange={(e) => setPocketOption(e.value)} 
-                                        checked={pocketOption === 'Patch'} 
-                                    />
-                                    <label htmlFor="pocket3" className="ml-2">Patch</label>
+                                    <RadioButton inputId="pocket3" name="pocket" value="Patch" onChange={(e) => setPocketOption(e.value)} checked={pocketOption === 'Patch'} />
+                                    <label htmlFor="pocket3" className="ml-2">
+                                        Patch
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1721,24 +1639,16 @@ const CreateOrder = () => {
                             <h5 className="m-0 mb-3">Pocket Square</h5>
                             <div className="flex flex-wrap gap-3">
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="pocketSquare1" 
-                                        name="pocketSquare" 
-                                        value="Yes" 
-                                        onChange={(e) => setPocketSquareOption(e.value)} 
-                                        checked={pocketSquareOption === 'Yes'} 
-                                    />
-                                    <label htmlFor="pocketSquare1" className="ml-2">Yes</label>
+                                    <RadioButton inputId="pocketSquare1" name="pocketSquare" value="Yes" onChange={(e) => setPocketSquareOption(e.value)} checked={pocketSquareOption === 'Yes'} />
+                                    <label htmlFor="pocketSquare1" className="ml-2">
+                                        Yes
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="pocketSquare2" 
-                                        name="pocketSquare" 
-                                        value="No" 
-                                        onChange={(e) => setPocketSquareOption(e.value)} 
-                                        checked={pocketSquareOption === 'No'} 
-                                    />
-                                    <label htmlFor="pocketSquare2" className="ml-2">No</label>
+                                    <RadioButton inputId="pocketSquare2" name="pocketSquare" value="No" onChange={(e) => setPocketSquareOption(e.value)} checked={pocketSquareOption === 'No'} />
+                                    <label htmlFor="pocketSquare2" className="ml-2">
+                                        No
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1749,24 +1659,16 @@ const CreateOrder = () => {
                             <h5 className="m-0 mb-3">Cuffs</h5>
                             <div className="flex flex-wrap gap-3">
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="cuffs1" 
-                                        name="cuffs" 
-                                        value="Yes" 
-                                        onChange={(e) => setCuffsOption(e.value)} 
-                                        checked={cuffsOption === 'Yes'} 
-                                    />
-                                    <label htmlFor="cuffs1" className="ml-2">Yes</label>
+                                    <RadioButton inputId="cuffs1" name="cuffs" value="Yes" onChange={(e) => setCuffsOption(e.value)} checked={cuffsOption === 'Yes'} />
+                                    <label htmlFor="cuffs1" className="ml-2">
+                                        Yes
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="cuffs2" 
-                                        name="cuffs" 
-                                        value="No" 
-                                        onChange={(e) => setCuffsOption(e.value)} 
-                                        checked={cuffsOption === 'No'} 
-                                    />
-                                    <label htmlFor="cuffs2" className="ml-2">No</label>
+                                    <RadioButton inputId="cuffs2" name="cuffs" value="No" onChange={(e) => setCuffsOption(e.value)} checked={cuffsOption === 'No'} />
+                                    <label htmlFor="cuffs2" className="ml-2">
+                                        No
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1777,34 +1679,22 @@ const CreateOrder = () => {
                             <h5 className="m-0 mb-3">Sleeves</h5>
                             <div className="flex flex-wrap gap-3">
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="sleeve1" 
-                                        name="sleeve" 
-                                        value="Full" 
-                                        onChange={(e) => setSleeveOption(e.value)} 
-                                        checked={sleeveOption === 'Full'} 
-                                    />
-                                    <label htmlFor="sleeve1" className="ml-2">Full</label>
+                                    <RadioButton inputId="sleeve1" name="sleeve" value="Full" onChange={(e) => setSleeveOption(e.value)} checked={sleeveOption === 'Full'} />
+                                    <label htmlFor="sleeve1" className="ml-2">
+                                        Full
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="sleeve2" 
-                                        name="sleeve" 
-                                        value="Half" 
-                                        onChange={(e) => setSleeveOption(e.value)} 
-                                        checked={sleeveOption === 'Half'}
-                                    />
-                                    <label htmlFor="sleeve2" className="ml-2">Half</label>
+                                    <RadioButton inputId="sleeve2" name="sleeve" value="Half" onChange={(e) => setSleeveOption(e.value)} checked={sleeveOption === 'Half'} />
+                                    <label htmlFor="sleeve2" className="ml-2">
+                                        Half
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="sleeve3" 
-                                        name="sleeve" 
-                                        value="Three Quarter" 
-                                        onChange={(e) => setSleeveOption(e.value)} 
-                                        checked={sleeveOption === 'Three Quarter'} 
-                                    />
-                                    <label htmlFor="sleeve3" className="ml-2">Three Quarter</label>
+                                    <RadioButton inputId="sleeve3" name="sleeve" value="Three Quarter" onChange={(e) => setSleeveOption(e.value)} checked={sleeveOption === 'Three Quarter'} />
+                                    <label htmlFor="sleeve3" className="ml-2">
+                                        Three Quarter
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1814,29 +1704,21 @@ const CreateOrder = () => {
                         <div className="surface-100 p-3 border-round mb-3">
                             <h5 className="m-0 font-medium">Bottom</h5>
                         </div>
-                        
+
                         <div className="field mb-4">
                             <h5 className="m-0 mb-3">Pants/Pyjamas</h5>
                             <div className="flex flex-wrap gap-3">
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="bottom3" 
-                                        name="bottom" 
-                                        value="Straight" 
-                                        onChange={(e) => setBottomOption(e.value)} 
-                                        checked={bottomOption === 'Straight'} 
-                                    />
-                                    <label htmlFor="bottom3" className="ml-2">Straight</label>
+                                    <RadioButton inputId="bottom3" name="bottom" value="Straight" onChange={(e) => setBottomOption(e.value)} checked={bottomOption === 'Straight'} />
+                                    <label htmlFor="bottom3" className="ml-2">
+                                        Straight
+                                    </label>
                                 </div>
                                 <div className="flex align-items-center">
-                                    <RadioButton 
-                                        inputId="bottom4" 
-                                        name="bottom" 
-                                        value="Slant" 
-                                        onChange={(e) => setBottomOption(e.value)} 
-                                        checked={bottomOption === 'Slant'} 
-                                    />
-                                    <label htmlFor="bottom4" className="ml-2">Slant</label>
+                                    <RadioButton inputId="bottom4" name="bottom" value="Slant" onChange={(e) => setBottomOption(e.value)} checked={bottomOption === 'Slant'} />
+                                    <label htmlFor="bottom4" className="ml-2">
+                                        Slant
+                                    </label>
                                 </div>
                             </div>
                         </div>
@@ -1844,41 +1726,25 @@ const CreateOrder = () => {
                 </div>
             </Dialog>
 
-            <Dialog 
-                visible={showImageSourceDialog} 
-                onHide={() => setShowImageSourceDialog(false)}
-                style={{ width: '95vw', maxWidth: '400px' }}
-            >
+            <Dialog visible={showImageSourceDialog} onHide={() => setShowImageSourceDialog(false)} style={{ width: '95vw', maxWidth: '400px' }}>
                 <div className="flex flex-column gap-3 p-3">
-                <Button 
-                    icon="pi pi-camera" 
-                    label="Take Photo" 
-                    className="p-button-outlined" 
-                    onClick={() => currentInstanceId && handleImageSourceSelect('camera', currentInstanceId)}
-                    disabled={!currentInstanceId}
-                />
-                <Button 
-                    icon="pi pi-images" 
-                    label="Choose from Gallery" 
-                    className="p-button-outlined" 
-                    onClick={() => currentInstanceId && handleImageSourceSelect('gallery', currentInstanceId)}
-                    disabled={!currentInstanceId}
-                />
-                <Button 
-                    icon="pi pi-folder-open" 
-                    label="Choose Files" 
-                    className="p-button-outlined" 
-                    onClick={() => {
-                    setShowImageSourceDialog(false);
-                    imageUploadRef?.click();
-                    }}
-                />
+                    <Button icon="pi pi-camera" label="Take Photo" className="p-button-outlined" onClick={() => currentInstanceId && handleImageSourceSelect('camera', currentInstanceId)} disabled={!currentInstanceId} />
+                    <Button icon="pi pi-images" label="Choose from Gallery" className="p-button-outlined" onClick={() => currentInstanceId && handleImageSourceSelect('gallery', currentInstanceId)} disabled={!currentInstanceId} />
+                    <Button
+                        icon="pi pi-folder-open"
+                        label="Choose Files"
+                        className="p-button-outlined"
+                        onClick={() => {
+                            setShowImageSourceDialog(false);
+                            imageUploadRef?.click();
+                        }}
+                    />
                 </div>
             </Dialog>
 
-            <Dialog 
-                header="Add Additional Cost" 
-                visible={showAddCostDialog} 
+            <Dialog
+                header="Add Additional Cost"
+                visible={showAddCostDialog}
                 onHide={() => {
                     setShowAddCostDialog(false);
                     setNewCostDescription('');
@@ -1887,22 +1753,22 @@ const CreateOrder = () => {
                 style={{ width: '95vw', maxWidth: '400px' }}
                 footer={
                     <div>
-                        <Button 
-                            label="Cancel" 
-                            icon="pi pi-times" 
+                        <Button
+                            label="Cancel"
+                            icon="pi pi-times"
                             onClick={() => {
                                 setShowAddCostDialog(false);
                                 setNewCostDescription('');
                                 setNewCostAmount(null);
-                            }} 
-                            className="p-button-text" 
+                            }}
+                            className="p-button-text"
                         />
-                        <Button 
-                            label="Add" 
-                            icon="pi pi-check" 
+                        <Button
+                            label="Add"
+                            icon="pi pi-check"
                             onClick={() => {
                                 if (newCostDescription && newCostAmount && currentInstanceId) {
-                                    setItemsData(prev => {
+                                    setItemsData((prev) => {
                                         const currentItem = prev[currentInstanceId] || {
                                             type: 'stitching',
                                             specialInstructions: '',
@@ -1935,8 +1801,8 @@ const CreateOrder = () => {
                                     setNewCostDescription('');
                                     setNewCostAmount(null);
                                 }
-                            }} 
-                            autoFocus 
+                            }}
+                            autoFocus
                         />
                     </div>
                 }
@@ -1944,25 +1810,11 @@ const CreateOrder = () => {
                 <div className="p-fluid">
                     <div className="field my-4">
                         <label htmlFor="costDescription">Title</label>
-                        <InputText 
-                            id="costDescription" 
-                            value={newCostDescription} 
-                            onChange={(e) => setNewCostDescription(e.target.value)} 
-                            className="w-full" 
-                            placeholder="e.g., Embroidery, Special Fabric, etc." 
-                        />
+                        <InputText id="costDescription" value={newCostDescription} onChange={(e) => setNewCostDescription(e.target.value)} className="w-full" placeholder="e.g., Embroidery, Special Fabric, etc." />
                     </div>
                     <div className="field">
                         <label htmlFor="costAmount">Amount (₹)</label>
-                        <InputNumber 
-                            id="costAmount" 
-                            value={newCostAmount} 
-                            onValueChange={(e) => setNewCostAmount(e.value ?? null)} 
-                            mode="currency" 
-                            currency="INR" 
-                            locale="en-IN" 
-                            className="w-full"
-                        />
+                        <InputNumber id="costAmount" value={newCostAmount} onValueChange={(e) => setNewCostAmount(e.value ?? null)} mode="currency" currency="INR" locale="en-IN" className="w-full" />
                     </div>
                 </div>
             </Dialog>
@@ -1971,15 +1823,16 @@ const CreateOrder = () => {
                 <div className="flex justify-content-between align-items-center p-3 surface-100">
                     <span className="font-bold">Total:</span>
                     <span className="font-bold">
-                        ₹{Object.values(garmentTotals)
+                        ₹
+                        {Object.values(garmentTotals)
                             .reduce((sum, current) => sum + (Number(current) || 0), 0)
                             .toFixed(2)}
                     </span>
                 </div>
                 <div className="p-3 mb-5">
-                    <Button 
-                        label={isConfirmingOrder ? '' : "Confirm Order"}
-                        icon={isConfirmingOrder ? "pi pi-spinner pi-spin" : ""}
+                    <Button
+                        label={isConfirmingOrder ? '' : 'Confirm Order'}
+                        icon={isConfirmingOrder ? 'pi pi-spinner pi-spin' : ''}
                         onClick={handleConfirmOrder}
                         className="w-full"
                         disabled={!selectedCustomer || selectedGarments.length === 0 || isConfirmingOrder}
@@ -1987,12 +1840,7 @@ const CreateOrder = () => {
                 </div>
             </div>
 
-            <Dialog
-                visible={activeIndex !== null}
-                style={{ width: '95vw', maxWidth: '800px' }}
-                onHide={() => setActiveIndex(null)}
-                modal
-            >
+            <Dialog visible={activeIndex !== null} style={{ width: '95vw', maxWidth: '800px' }} onHide={() => setActiveIndex(null)} modal>
                 <Galleria
                     value={currentInstanceId ? itemsData[currentInstanceId]?.uploadedImages || [] : []}
                     activeIndex={activeIndex ?? 0}

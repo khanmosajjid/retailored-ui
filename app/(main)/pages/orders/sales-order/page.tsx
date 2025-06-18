@@ -127,6 +127,7 @@ const SalesOrder = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingDetails, setIsSavingDetails] = useState(false);
   const [images, setImages] = useState<{itemImageSrc: string}[]>([]);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     perPage: 20,
@@ -154,7 +155,7 @@ const SalesOrder = () => {
     { id: '4', name: 'Cancelled' }
   ];
 
-  const fetchOrders = useCallback(async (page: number, perPage: number, loadMore = false) => {
+  const fetchOrders = useCallback(async (page: number, perPage: number, loadMore = false,status?:string |null) => {
     try {
       if (loadMore) {
         setIsFetchingMore(true);
@@ -162,7 +163,7 @@ const SalesOrder = () => {
         setLoading(true);
       }
 
-      const response = await SalesOrderService.getSalesOrders(page, perPage, debouncedSearchTerm);
+      const response = await SalesOrderService.getSalesOrders(page, perPage, debouncedSearchTerm, status);
       const newOrders = response.data.map((res: any) => ({
         ...res,
         customer: res.user.fname,
@@ -267,6 +268,11 @@ const SalesOrder = () => {
     }
   };
 
+  const getFilteredOrders = (orders: Order[], filter: string | null) => {
+      if (!filter) return orders;
+      return orders.filter((order) => order.orderStatus?.id === filter);
+  };
+
   const fetchPaymentHistory = async (orderId: string) => {
     try {
       setLoadingPaymentHistory(true);
@@ -283,6 +289,8 @@ const SalesOrder = () => {
       setLoadingPaymentHistory(false);
     }
   };
+
+  const filteredOrders = getFilteredOrders(orders, statusFilter);
 
   const fetchMeasurements = async (OrderID: number) => {
     setLoadingMeasurements(true);
@@ -751,962 +759,821 @@ const SalesOrder = () => {
   }  
 
   return (
-    <div className="flex flex-column p-3 lg:p-5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      {(isSaving || isSavingDetails) && <FullPageLoader />}
-      <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 gap-3">
-        <h2 className="text-2xl m-0">Sales Orders</h2>
-        <span className="p-input-icon-left p-input-icon-right w-full">
-          <i className="pi pi-search" />
-          <InputText 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search"
-            className="w-full"
-          />
-          
-          {loading && debouncedSearchTerm ? (
-            <i className="pi pi-spin pi-spinner" />
-          ) : searchTerm ? (
-            <i 
-              className="pi pi-times cursor-pointer" 
-              onClick={() => {
-                setSearchTerm('');
-              }}
-            />
-          ) : null}
-        </span>
-        <Button 
-          label="Create Order" 
-          icon="pi pi-plus" 
-          onClick={handleAddOrder}
-          className="w-full md:w-auto"
-          size="small"
-        />
-      </div>
-      
-      <div className="grid">
-        {orders.length > 0 ? (
-          orders.map((order, index) => (
-            <div 
-              key={order.id} 
-              className="col-12 md:col-6 lg:col-4"
-              ref={index === orders.length - 1 ? lastOrderRef : null}
-            >
-              <Card className="h-full">
-                <div className="flex flex-column gap-2">
-                  <div className="flex justify-content-between align-items-center">
-                    <span className="font-bold">{order.docno}</span>
-                    <Tag 
-                      value={order.orderStatus?.status_name || 'Unknown'}
-                      severity={getStatusSeverity(order.orderStatus?.status_name)} 
-                    />
-                  </div>
-                  
-                  <Divider className="my-2" />
-                  
-                  <div className="flex flex-column gap-1">
-                    <div className="flex justify-content-between">
-                      <span className="text-600">Customer:</span>
-                      <span>{order.customer}</span>
-                    </div>
-                    <div className="flex justify-content-between">
-                      <span className="text-600">Order Date:</span>
-                      <span>{formatDate(new Date(order.order_date))}</span>
-                    </div>
-                    <div className="flex justify-content-between">
-                      <span className="text-600">Delivered:</span>
-                      <span>{order.delivered_qty}</span>
-                    </div>
-                    <div className="flex justify-content-between">
-                      <span className="text-600">Payment Pending:</span>
-                      <span>{getPendingAmountSummary(order)}</span>
-                    </div>
-                  </div>
-                  
-                  <Divider className="my-2" />
-                  
-                  <div className="flex flex-column gap-1">
-                    <span className="text-600">Notes:</span>
-                    <p className="m-0 text-sm">{order.desc1 || 'No notes'}</p>
-                  </div>
-                  
-                  <div className="mt-3">
-                    <Button 
-                      label="View Details" 
-                      icon="pi pi-eye"
-                      onClick={() => openOrderDetails(order)}
-                      className="w-full p-button-sm"
-                    />
-                  </div>
-                </div>
-              </Card>
-            </div>
-          ))
-        ) : (
-          <div className="col-12">
-            <div className="p-4 text-center surface-100 border-round">
-              <i className="pi pi-search text-3xl mb-1" />
-              <h4>No orders found</h4>
-            </div>
-          </div>
-        )}
-      </div>
+      <div className="flex flex-column p-3 lg:p-5" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          {(isSaving || isSavingDetails) && <FullPageLoader />}
+          <div className="flex flex-column md:flex-row justify-content-between align-items-start md:align-items-center mb-4 gap-3">
+              <h2 className="text-2xl m-0">Sales Orders</h2>
 
-      {isFetchingMore && (
-        <div className="flex justify-content-center mt-3">
-          <div className="flex align-items-center gap-2">
-            <i className="pi pi-spinner pi-spin" />
-            <span>Loading more orders...</span>
-          </div>
-        </div>
-      )}
+              <div className="flex align-items-center gap-3 w-full md:w-auto">
+                  <span className="p-input-icon-left p-input-icon-right search-box">
+                      <i className="pi pi-search" />
+                      <InputText value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search" className="w-full" />
+                      {loading && debouncedSearchTerm ? <i className="pi pi-spin pi-spinner" /> : searchTerm ? <i className="pi pi-times cursor-pointer" onClick={() => setSearchTerm('')} /> : null}
+                  </span>
 
-      <Dialog 
-        header={`Order Details - ${selectedOrder?.docno}`} 
-        visible={visible} 
-        onHide={handleDialogClose}
-        maximized={isMaximized}
-        onMaximize={(e) => setIsMaximized(e.maximized)}
-        className={isMaximized ? 'maximized-dialog' : ''}
-        blockScroll
-      >
-        {listLoading ? (
-          <div className="p-fluid mt-3">
-            <div className="mb-4">
-              <Skeleton width="100%" height="10rem" borderRadius="6px" className="mb-5" />
-              <Skeleton width="100%" height="2.5rem" borderRadius="6px" className="mb-5" />
-              <Skeleton width="100%" height="20rem" className="mb-1" />
-            </div>
-
-            <div className="grid">
-              <div className="col-12 md:col-4 mb-2">
-                <Skeleton width="100%" height="2.5rem" borderRadius="6px" />
+                  <div className="flex gap-2 filter-buttons">
+                      <Button label="All" outlined={statusFilter !== null} severity={statusFilter === null ? 'info' : 'secondary'} onClick={() => setStatusFilter(null)} size="small" />
+                      <Button label="Pending" outlined={statusFilter !== '1'} severity={statusFilter === '1' ? 'warning' : 'secondary'} onClick={() => setStatusFilter('1')} size="small" />
+                      <Button label="In Progress" outlined={statusFilter !== '2'} severity={statusFilter === '2' ? 'info' : 'secondary'} onClick={() => setStatusFilter('2')} size="small" />
+                      <Button label="Ready" outlined={statusFilter !== '5'} severity={statusFilter === '5' ? 'help' : 'secondary'} onClick={() => setStatusFilter('5')} size="small" />
+                      <Button label="Cancelled" outlined={statusFilter !== '4'} severity={statusFilter === '4' ? 'danger' : 'secondary'} onClick={() => setStatusFilter('4')} size="small" />
+                  </div>
               </div>
-              <div className="col-12 md:col-4 mb-2">
-                <Skeleton width="100%" height="2.5rem" borderRadius="6px" />
-              </div>
-              <div className="col-12 md:col-4 mb-2">
-                <Skeleton width="100%" height="2.5rem" borderRadius="6px" />
-              </div>
-            </div>
-          </div>
-        ) : selectedOrder ? (
-          <div className="p-fluid mt-3">
-            <div className="grid">
-              <div className="col-6">
-                <div className="field">
-                  <label>Customer</label>
-                  <p className="m-0 font-medium">{selectedOrder?.user?.fname}</p>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="field">
-                  <label>Order Date</label>
-                  <p className="m-0 font-medium">{formatDate(new Date(selectedOrder.order_date))}</p>
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="field">
-                  <label>Status</label>&nbsp;
-                  <Tag 
-                    value={selectedOrder.orderStatus?.status_name || 'Unknown'}
-                    severity={getStatusSeverity(selectedOrder.orderStatus?.status_name) || undefined}
-                    className="text-sm font-semibold"
-                    style={{ minWidth: '6rem', textAlign: 'center' }}
-                  />
-                </div>
-              </div>
-              <div className="col-6">
-                <div className="field">
-                  <label>Trial Date</label>
-                  <p className="m-0 font-medium">{selectedOrder.orderDetails?.some(item => item.trial_date) 
-                    ? formatDate(new Date(selectedOrder.orderDetails.find(item => item.trial_date)?.trial_date || '')) 
-                    : 'Not scheduled'}</p>
-                </div>
-              </div>
-              <div className="col-12">
-                <div className="flex gap-2 mt-3">
-                  <Button
-                    label="Receive Payment"
-                    icon="pi pi-wallet"
-                    onClick={handlePaymentClick}
-                    disabled={selectedOrder?.amt_due === 0 || selectedOrder?.amt_due === undefined}
-                  />
-                  <Button
-                    icon={loadingPaymentHistory ? 'pi pi-spin pi-spinner' : 'pi pi-history'}
-                    style={{ width: '20%' }}
-                    onClick={handleViewPaymentHistory}
-                    className="p-button-secondary"
-                    disabled={loadingPaymentHistory}
-                  />
-                </div>
-              </div>
-            </div>
 
-            <Divider />
-            
-            <h5 className="m-0 mb-3">Order Items</h5>
-
-            {selectedOrder.orderDetails?.map((item) => (
-              <div key={item.id} className="mb-4 surface-50 p-3 border-round">
-                <div className="grid">
-                  <div className="col-6">
-                    <div className="field">
-                      <label>Item Ref</label>
-                      <p className="m-0 font-medium">{item.item_ref || 'Not Available'}</p>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="field">
-                      <label>Job Order No</label>
-                      <p className="m-0 font-medium">{item.order_id}</p>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="field">
-                      <label>Item Name</label>
-                      <p className="m-0 font-medium">{item.material?.name || 'Not Available'}</p>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="field">
-                      <label>Jobber Name</label>
-                      <p className="m-0 font-medium">{item.jobOrderDetails?.[0]?.adminSite?.sitename || 'Not assigned'}</p>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="field">
-                      <label>Trial Date</label>
-                      <p className="m-0 font-medium">
-                        {item.trial_date ? formatDate(new Date(item.trial_date)) : 'Not scheduled'}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="col-6">
-                    <div className="field">
-                      <label>Amount</label>
-                      <p className="m-0 font-medium">₹ {item.item_amt || 0}</p>
-                    </div>
-                  </div>
-                  <div className="col-12 mt-2">
-                    <div className="grid align-items-start">
-                      <div className="col-9">
-                        <div className="field">
-                          <label>Notes</label>
-                          <p className="m-0 font-medium">{item.desc1 || 'No Notes Available'}</p>
-                        </div>
-                      </div>
-                      <div className="col-3 flex justify-content-end pt-4">
-                        <Button 
-                          icon="pi pi-pencil" 
-                          onClick={() => handleEditOrderDetail(item)}
-                          className="p-button-rounded p-button"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="col-12 mt-2">
-                    <Button
-                      label={`Status (${item.orderStatus?.status_name || 'Unknown'})`}
-                      icon="pi pi-sync"
-                      onClick={() => {
-                        setSelectedDetail(item);
-                        setStatusSidebarVisible(true);
-                      }}
-                      severity={getStatusSeverity(item.orderStatus?.status_name) || undefined}
-                    />
-                  </div>
-
-                  {item?.image_url && item.image_url.length > 0 && (
-                    <div className="col-12 mt-2">
-                      <Button 
-                        label={`View Images (${item.image_url.length})`} 
-                        icon="pi pi-image" 
-                        className="p-button-outlined"
-                        onClick={() => handleImagePreview(item.image_url)}
-                      />
-                    </div>
-                  )}
-
-                  <div className="col-12 mt-2">
-                    <Button 
-                      label="View Measurement Details" 
-                      icon="pi pi-eye" 
-                      className="p-button-outlined"
-                      onClick={() => handleViewMeasurement(item)}
-                    />
-                  </div>
-
-                  <div className="col-12 mt-2">
-                    <Button 
-                      label="Update Status"
-                      icon="pi pi-pencil" 
-                      onClick={() => openItemActionSidebar(item)}
-                      className="w-full"
-                    />
-                  </div>
-                  <Divider />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex justify-content-center align-items-center" style={{ height: '200px' }}>
-            <p>No order details available</p>
-          </div>
-        )}
-      </Dialog>
-
-      <Dialog 
-        visible={imagePreviewVisible} 
-        onHide={() => setImagePreviewVisible(false)}
-        style={{ width: '90vw' }}
-      >
-        <Galleria
-          value={images}
-          activeIndex={activeImageIndex}
-          onItemChange={(e) => setActiveImageIndex(e.index)}
-          showThumbnails={false}
-          showIndicators={images.length > 1}
-          showItemNavigators={images.length > 1}
-          item={itemTemplate}
-          thumbnail={thumbnailTemplate}
-          style={{ width: '100%' }}
-        />
-      </Dialog>
-
-      <Dialog 
-        header="Receive Payment"
-        visible={paymentDialogVisible}
-        onHide={() => setPaymentDialogVisible(false)}
-        maximized={isMaximized}
-        onMaximize={(e) => setIsMaximized(e.maximized)}
-        className={isMaximized ? 'maximized-dialog' : ''}
-        blockScroll
-      >
-        <div className="p-fluid">
-          <div className="field my-4">
-            <label htmlFor="amount" className="font-bold block mb-2">
-              Payment Amount (₹)
-            </label>
-            <InputText 
-              id="amount" 
-              type="number" 
-              className="w-full" 
-              placeholder="Enter amount"
-              value={paymentForm.amount}
-              onChange={(e) => {
-                const enteredAmount = parseFloat(e.target.value) || 0;
-                const maxAllowed = selectedOrder?.amt_due || 0;
-                if (enteredAmount <= maxAllowed) {
-                  setPaymentForm({...paymentForm, amount: e.target.value});
-                } else {
-                  Toast.show({
-                    text: `Amount cannot exceed ₹${maxAllowed}`,
-                    duration: 'short',
-                    position: 'bottom'
-                  });
-                  setPaymentForm({...paymentForm, amount: maxAllowed.toString()});
-                }
-              }}
-              max={selectedOrder?.amt_due}
-            />
+              <Button label="Create Order" icon="pi pi-plus" onClick={handleAddOrder} className="w-full md:w-auto" size="small" />
           </div>
 
-          <div className="field mb-4">
-            <label htmlFor="paymentDate" className="font-bold block mb-2">
-              Payment Date
-            </label>
-            <Calendar
-              id="paymentDate"
-              value={new Date(paymentForm.paymentDate)}
-              onChange={(e) => setPaymentForm({...paymentForm, paymentDate: e.value?.toISOString().split('T')[0] || ''})}
-              dateFormat="dd-mm-yy"
-              showIcon
-              className="w-full"
-            />
-          </div>
-
-          <div className="field mb-4">
-            <label htmlFor="paymentMethod" className="font-bold block mb-2">
-              Payment Method
-            </label>
-            <Dropdown 
-              id="paymentMethod"
-              value={paymentForm.paymentMethod}
-              options={paymentModes.map(mode => ({
-                label: mode.mode_name,
-                value: mode.id
-              }))}
-              optionLabel="label"
-              placeholder={paymentModes.length ? "Select payment method" : "Loading payment methods..."}
-              className="w-full"
-              onChange={(e) => setPaymentForm({...paymentForm, paymentMethod: e.value})}
-              disabled={!paymentModes.length}
-            />
-          </div>
-
-          <div className="field mb-4">
-            <label htmlFor="reference" className="font-bold block mb-2">
-              Reference/Note
-            </label>
-            <InputText 
-              id="reference" 
-              className="w-full" 
-              placeholder="Enter reference or note"
-              value={paymentForm.reference}
-              onChange={(e) => setPaymentForm({...paymentForm, reference: e.target.value})}
-            />
-          </div>
-
-          <div className="flex justify-content-end gap-2 mt-4">
-            <Button 
-              label="Cancel" 
-              icon="pi pi-times" 
-              className="p-button-secondary"
-              onClick={() => {
-                setPaymentDialogVisible(false);
-                setPaymentForm({
-                  amount: '',
-                  paymentDate: new Date().toISOString().split('T')[0],
-                  reference: '',
-                  paymentMethod: ''
-                });
-              }}
-            />
-            <Button 
-              label="Confirm" 
-              icon="pi pi-check" 
-              className="p-button-success"
-              onClick={handlePaymentSubmit}
-              disabled={!paymentForm.amount || !paymentForm.paymentDate || !paymentForm.paymentMethod || parseFloat(paymentForm.amount) > (selectedOrder?.amt_due || 0)}
-            />
-          </div>
-        </div>
-      </Dialog>
-
-    <Sidebar 
-        visible={paymentHistorySidebarVisible}
-        onHide={() => setPaymentHistorySidebarVisible(false)}
-        position="bottom"
-        style={{ 
-          width: '100vw',
-          height: '68vh',
-          maxHeight: '68vh',
-          borderTopLeftRadius: '12px',
-          borderTopRightRadius: '12px',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)'
-        }}
-        className="custom-selector-sidebar"
-        header={
-          <div className="flex align-items-center gap-2">
-            <span className="font-bold text-xl">Payment History</span>
-          </div>
-        }
-      >
-        {loadingPaymentHistory ? (
-          <div className="flex justify-content-center p-4">
-            <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" />
-          </div>
-        ) : paymentHistory.length > 0 ? (
-          <div className="flex flex-column gap-2 p-2">
-            {paymentHistory.map((payment, index) => (
-              <div key={index} className="flex justify-content-between align-items-center border-1 surface-border p-3 border-round">
-                <div className="text-sm">
-                  <div className="text-500">Date</div>
-                  <div className="font-medium">{new Date(payment.payment_date).toLocaleDateString('en-IN')}</div>
-                </div>
-                <div className="text-sm text-right">
-                  <div className="text-500">Amount</div>
-                  <div className="font-medium">₹{payment.payment_amt}</div>
-                </div>
-                <div className="text-sm text-right">
-                  <div className="text-500">Method</div>
-                  <div className="font-medium">
-                    {payment.paymentMode?.mode_name || payment.payment_type || 'Unknown'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="flex flex-column align-items-center justify-content-center p-5">
-            <i className="pi pi-info-circle text-2xl mb-2"></i>
-            <p className="text-500 m-0">No payment history found</p>
-          </div>
-        )}
-      </Sidebar>
-
-      <Sidebar 
-        visible={itemActionSidebarVisible}
-        onHide={() => setItemActionSidebarVisible(false)}
-        position="bottom"
-        style={{ 
-          width: '100%',
-          height: 'auto',
-          maxHeight: '80vh',
-          borderTopLeftRadius: '12px',
-          borderTopRightRadius: '12px',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)'
-        }}
-        className="custom-item-action-sidebar"
-        header={
-          <div className="sticky top-0 bg-white z-1 p-3 surface-border flex justify-content-between align-items-center">
-            <span className="font-bold text-xl mr-2">
-              {/* {selectedDetail?.material?.name || 'Item Actions'} */}
-            </span>
-            <span className="text-sm text-500">
-              Max: {selectedDetail ? selectedDetail.ord_qty - selectedDetail.delivered_qty - selectedDetail.cancelled_qty : 0}
-            </span>
-          </div>
-        }
-        blockScroll
-      >
-        {selectedDetail && (
-          <div className="p-3">
-            <div className="field mb-4">
-              <label className="font-bold block mb-2">Quantity</label>
-              <div className="flex align-items-center justify-content-between bg-gray-100 p-2 border-round">
-                <Button
-                  icon="pi pi-minus" 
-                  onClick={() => handleStatusQuantityChange(quantity - 1)}
-                  className="p-button-rounded p-button-text"
-                  disabled={quantity <= 1}
-                />
-                <InputText 
-                  value={String(quantity)}
-                  onChange={(e) => {
-                    const newValue = parseInt(e.target.value) || 1;
-                    const maxQty = selectedDetail.ord_qty - selectedDetail.delivered_qty - selectedDetail.cancelled_qty;
-                    handleStatusQuantityChange(Math.min(newValue, maxQty));
-                  }}
-                  className="text-center mx-2 bg-white"
-                  style={{ width: '60px' }}
-                  keyfilter="int"
-                />
-                <Button 
-                  icon="pi pi-plus" 
-                  onClick={() => handleStatusQuantityChange(quantity + 1)}
-                  className="p-button-rounded p-button-text"
-                  disabled={quantity >= (selectedDetail.ord_qty - selectedDetail.delivered_qty - selectedDetail.cancelled_qty)}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-2 w-full">
-              <Button 
-                label="Cancelled" 
-                icon="pi pi-times" 
-                onClick={() => setConfirmCancelledVisible(true)}
-                className="flex-grow-1 p-button-danger"
-              />
-              <Button 
-                label="Delivered" 
-                icon="pi pi-check" 
-                onClick={() => setConfirmDeliveredVisible(true)}
-                className="flex-grow-1 p-button-success"
-              />
-            </div>
-          </div>
-        )}
-      </Sidebar>
-
-      <Sidebar 
-        visible={statusSidebarVisible} 
-        onHide={() => setStatusSidebarVisible(false)}
-        position="bottom"
-        style={{ 
-          width: '100%',
-          height: 'auto',
-          maxHeight: '62vh',
-          borderTopLeftRadius: '12px',
-          borderTopRightRadius: '12px',
-          boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)'
-        }}
-        header={
-          <div className="sticky top-0 bg-white z-1 p-3 border-bottom-1 surface-border flex justify-content-between align-items-center">
-            <span className="font-bold text-xl">Update Item Status</span>
-          </div>
-        }
-        className="p-0"
-      >
-        <div className="p-3">
           <div className="grid">
-            {availableStatuses.map(status => (
-              <div key={status.id} className="col-12 md:col-6 lg:col-4 p-2">
-                <Button
-                  label={status.name}
-                  onClick={() => handleItemStatusUpdate(parseInt(status.id))}
-                  severity={getStatusSeverity(status.name) || undefined}
-                  className="w-full p-3 text-lg justify-content-start p-button-outlined"
-                  icon={
-                    status.name === 'Completed' ? 'pi pi-check-circle' :
-                    status.name === 'In Progress' ? 'pi pi-spinner' :
-                    status.name === 'Pending' ? 'pi pi-clock' :
-                    status.name === 'Cancelled' ? 'pi pi-times-circle' :
-                    'pi pi-info-circle'
-                  }
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </Sidebar>
+              {filteredOrders.length > 0 ? (
+                  filteredOrders.map((order, index) => (
+                      <div key={order.id} className="col-12 md:col-6 lg:col-4" ref={index === filteredOrders.length - 1 ? lastOrderRef : null}>
+                          <Card className="h-full">
+                              <div className="flex flex-column gap-2">
+                                  <div className="flex justify-content-between align-items-center">
+                                      <span className="font-bold">{order.docno}</span>
+                                      <Tag value={order.orderStatus?.status_name || 'Unknown'} severity={getStatusSeverity(order.orderStatus?.status_name)} />
+                                  </div>
 
-      <Dialog 
-        header="Edit Order Details"
-        visible={editOrderDetailDialogVisible}
-        onHide={() => setEditOrderDetailDialogVisible(false)}
-        maximized={isMaximized}
-        onMaximize={(e) => setIsMaximized(e.maximized)}
-        className={isMaximized ? 'maximized-dialog' : ''}
-        blockScroll
-        footer={
-          <div>
-            <Button 
-              label="Update" 
-              icon="pi pi-check" 
-              onClick={handleUpdateOrderDetail}
-              autoFocus 
-              className="w-full"
-              loading={isSavingDetails} 
-              disabled={isSavingDetails}
-            />
-          </div>
-        }
-      >
-        {selectedOrderDetail && (
-          <div className="p-fluid my-4">
-            <div className="field">
-              <label htmlFor="trialDate">Trial Date</label>
-              <Calendar 
-                id="trialDate"
-                value={selectedOrderDetail?.trial_date ? new Date(selectedOrderDetail.trial_date) : null}
-                onChange={(e) => {
-                  if (!selectedOrderDetail) return;
-                  setSelectedOrderDetail({
-                    ...selectedOrderDetail,
-                    trial_date: e.value ? e.value.toISOString() : null
-                  });
-                }}
-                dateFormat="dd/mm/yy"
-                showTime
-                hourFormat="12"
-                showIcon
-                placeholder="Select Trial Date & Time"
-                minDate={new Date()}
-              />
-            </div>
+                                  <Divider className="my-2" />
 
-            <div className="field">
-              <label htmlFor="deliveryDate">Delivery Date</label>
-              <Calendar 
-                id="deliveryDate"
-                value={selectedOrderDetail?.delivery_date ? new Date(selectedOrderDetail.delivery_date) : null}
-                onChange={(e) => {
-                  if (!selectedOrderDetail) return;
-                  setSelectedOrderDetail({
-                    ...selectedOrderDetail,
-                    delivery_date: e.value ? e.value.toISOString() : null
-                  });
-                }}
-                dateFormat="dd/mm/yy"
-                showTime
-                hourFormat="12"
-                showIcon
-                placeholder="Select Delivery Date & Time"
-                minDate={new Date()}
-              />
-            </div>
+                                  <div className="flex flex-column gap-1">
+                                      <div className="flex justify-content-between">
+                                          <span className="text-600">Customer:</span>
+                                          <span>{order.customer}</span>
+                                      </div>
+                                      <div className="flex justify-content-between">
+                                          <span className="text-600">Order Date:</span>
+                                          <span>{formatDate(new Date(order.order_date))}</span>
+                                      </div>
+                                      <div className="flex justify-content-between">
+                                          <span className="text-600">Delivered:</span>
+                                          <span>{order.delivered_qty}</span>
+                                      </div>
+                                      <div className="flex justify-content-between">
+                                          <span className="text-600">Payment Pending:</span>
+                                          <span>{getPendingAmountSummary(order)}</span>
+                                      </div>
+                                  </div>
 
-            <div className="field">
-              <label htmlFor="itemAmt">Item Amount</label>
-              <InputNumber 
-                id="itemAmt"
-                value={selectedOrderDetail.item_amt}
-                onValueChange={(e) => setSelectedOrderDetail({
-                  ...selectedOrderDetail,
-                  item_amt: e.value || 0
-                })}
-                mode="currency" 
-                currency="INR" 
-                locale="en-IN"
-              />
-            </div>
+                                  <Divider className="my-2" />
 
-            <div className="field">
-              <label htmlFor="ordQty">Order Qty</label>
-              <InputNumber 
-                id="ordQty"
-                value={selectedOrderDetail.ord_qty}
-                onValueChange={(e) => setSelectedOrderDetail({
-                  ...selectedOrderDetail,
-                  ord_qty: e.value || 0
-                })}
-                min={0}
-              />
-            </div>
+                                  <div className="flex flex-column gap-1">
+                                      <span className="text-600">Notes:</span>
+                                      <p className="m-0 text-sm">{order.desc1 || 'No notes'}</p>
+                                  </div>
 
-            <div className="field">
-              <label htmlFor="desc1">Special Instruction</label>
-              <InputTextarea 
-                id="desc1"
-                value={selectedOrderDetail.desc1 || ''} 
-                onChange={(e) =>
-                  setSelectedOrderDetail({
-                    ...selectedOrderDetail,
-                    desc1: e.target.value,
-                  })
-                }
-                rows={4}
-                autoResize
-              />
-            </div>
-          </div>
-        )}
-      </Dialog>
-
-      <Dialog 
-        header={
-          <div className="flex align-items-center w-full">
-            <span>Measurement Details</span>
-            <Button 
-              icon="pi pi-pencil" 
-              onClick={handleEditMeasurement}
-              className="p-button-rounded p-button-text"
-              disabled={!measurementData}
-              style={{ marginLeft: '0.5rem' }}
-            />
-          </div>
-        }
-        visible={measurementDialogVisible} 
-        onHide={() => {
-          setMeasurementDialogVisible(false);
-          setMeasurementData(null);
-        }}
-        maximized={isMaximized}
-        onMaximize={(e) => setIsMaximized(e.maximized)}
-        className={isMaximized ? 'maximized-dialog' : ''}
-        blockScroll
-      >
-        {selectedItem && (
-          <div className="p-fluid">
-            <div className="grid my-2">
-              <div className="col-6 font-bold text-600">Customer Name:</div>
-              <div className="col-6 font-medium text-right">{selectedOrder?.user?.fname}</div>
-              
-            <div className="col-6 font-bold text-600">Delivery Date:</div>
-              <div className="col-6 font-medium text-right">
-                {selectedItem.delivery_date ? formatDate(new Date(selectedItem.delivery_date)) : 'Not scheduled'}
-              </div>
-              
-              <div className="col-6 font-bold text-600">Trial Date:</div>
-              <div className="col-6 font-medium text-right">
-                {selectedItem.trial_date ? formatDate(new Date(selectedItem.trial_date)) : 'Not scheduled'}
-              </div>
-            </div>
-
-            {loadingMeasurements ? (
-              <div className="surface-100 p-3 border-round my-4">
-                <div className="flex align-items-center gap-3">
-                  <Skeleton shape="circle" size="2rem" />
-                  <div className="flex flex-column gap-2 w-full">
-                    <Skeleton width="100%" height="1.5rem" />
-                    <Skeleton width="50%" height="1rem" />
-                  </div>
-                </div>
-                {[...Array(4)].map((_, i) => (
-                  <div key={i} className="grid my-3">
-                    <div className="col-6">
-                      <Skeleton width="80%" height="1.5rem" />
-                    </div>
-                    <div className="col-6">
-                      <Skeleton width="60%" height="1.5rem" className="float-right" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : measurementData && measurementData.measurementDetails?.length > 0 ? (
-              <>
-                <div className="surface-100 p-3 border-round my-4">
-                  <h4 className="m-0">Measurements</h4>
-                  <p className="text-sm mt-1">
-                    Taken on: {new Date(measurementData.measurement_date).toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="grid mb-4">
-                  {measurementData.measurementDetails.map((detail, index) => (
-                    <div key={index} className="col-12 md:col-6">
-                      <div className="flex justify-content-between align-items-center p-3 border-bottom-1 surface-border">
-                        <span className="font-medium">{detail.measurementMaster.measurement_name}</span>
-                        <span className="font-bold">{detail.measurement_val}</span>
+                                  <div className="mt-3">
+                                      <Button label="View Details" icon="pi pi-eye" onClick={() => openOrderDetails(order)} className="w-full p-button-sm" />
+                                  </div>
+                              </div>
+                          </Card>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <div className="surface-100 p-3 border-round my-4 text-center">
-                <i className="pi pi-info-circle text-2xl mb-2" />
-                <p className="m-0">No measurement details available</p>
-              </div>
-            )}
-
-            <div className="surface-50 p-3 border-round">
-              <h5 className="mt-0 mb-3">Stitch Options</h5>
-              {loadingMeasurements ? (
-                <div className="grid">
-                  {[...Array(4)].map((_, i) => (
-                    <div key={i} className="col-6">
-                      <Skeleton width="80%" height="1.5rem" className="mb-2" />
-                    </div>
-                  ))}
-                </div>
+                  ))
               ) : (
-                <div className="grid">
-                  <div className="col-6 font-bold text-600">Collar:</div>
-                  <div className="col-6 font-medium text-right">
-                    {measurementData ? 'Classic' : 'No details available'}
+                  <div className="col-12">
+                      <div className="p-4 text-center surface-100 border-round">
+                          <i className="pi pi-search text-3xl mb-1" />
+                          <h4>No orders found</h4>
+                          {statusFilter && <p className="text-sm mt-2">No orders match the current filter. Try changing your filter criteria.</p>}
+                          {!statusFilter && searchTerm && <p className="text-sm mt-2">No orders match your search term. Try a different search.</p>}
+                      </div>
                   </div>
-                  
-                  <div className="col-6 font-bold text-600">Sleeve:</div>
-                  <div className="col-6 font-medium text-right">
-                    {measurementData ? 'Full' : 'No details available'}
-                  </div>
-                  
-                  <div className="col-6 font-bold text-600">Cuffs:</div>
-                  <div className="col-6 font-medium text-right">
-                    {measurementData ? 'Squared' : 'No details available'}
-                  </div>
-                  
-                  <div className="col-6 font-bold text-600">Pocket Type:</div>
-                  <div className="col-6 font-medium text-right">
-                    {measurementData ? 'Classic' : 'No details available'}
-                  </div>
-                </div>
               )}
-            </div>
           </div>
-        )}
-      </Dialog>
 
-      <Dialog 
-        header="Edit Measurement Details"
-        visible={editMeasurementDialogVisible}
-        onHide={() => setEditMeasurementDialogVisible(false)}
-        maximized={isMaximized}
-        onMaximize={(e) => setIsMaximized(e.maximized)}
-        className={isMaximized ? 'maximized-dialog' : ''}
-        blockScroll
-        footer={
-          <div>
-            <Button 
-              label="Update" 
-              icon="pi pi-check" 
-              onClick={saveEditedMeasurements}
-              autoFocus
-              className="w-full"
-              loading={isSaving} 
-              disabled={isSaving}
-            />
-          </div>
-        }
-      >
-        <div className="p-fluid">
-          {editedMeasurements.map((measurement) => {
-            const measurementDetail = measurementData?.measurementDetails.find(
-              detail => detail.measurementMaster.id === measurement.id
-            );
-            
-            const dataType = measurementDetail?.measurementMaster.data_type || 'text';
-            
-            return (
-              <div key={measurement.id} className="field my-3">
-                <label htmlFor={`measurement-${measurement.id}`} className="font-bold block mb-1">
-                  {measurement.name} <span className="text-500 font-normal">({dataType})</span>
-                </label>
-                <InputText
-                  id={`measurement-${measurement.id}`}
-                  value={measurement.value}
-                  onChange={(e) => handleMeasurementValueChange(measurement.id, e.target.value)}
-                  className="w-full"
-                />
+          {isFetchingMore && (
+              <div className="flex justify-content-center mt-3">
+                  <div className="flex align-items-center gap-2">
+                      <i className="pi pi-spinner pi-spin" />
+                      <span>Loading more orders...</span>
+                  </div>
               </div>
-            );
-          })}
-        </div>
-      </Dialog>
+          )}
 
-      <Dialog 
-        header="Confirm Delivery"
-        visible={confirmDeliveredVisible}
-        onHide={() => setConfirmDeliveredVisible(false)}
-        style={{ width: '450px' }}
-        modal
-        footer={
-          <div>
-            <Button 
-              label="No" 
-              icon="pi pi-times" 
-              onClick={() => setConfirmDeliveredVisible(false)} 
-              className="p-button-text" 
-            />
-            <Button 
-              label="Yes" 
-              icon="pi pi-check" 
-              onClick={() => {
-                setConfirmDeliveredVisible(false);
-                handleDelivered();
-              }} 
-              autoFocus 
-            />
-          </div>
-        }
-      >
-        <div className="flex align-items-center justify-content-center">
-          <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          <span>
-            Are you sure you want to mark {quantity} items as delivered?
-          </span>
-        </div>
-      </Dialog>
+          <Dialog header={`Order Details - ${selectedOrder?.docno}`} visible={visible} onHide={handleDialogClose} maximized={isMaximized} onMaximize={(e) => setIsMaximized(e.maximized)} className={isMaximized ? 'maximized-dialog' : ''} blockScroll>
+              {listLoading ? (
+                  <div className="p-fluid mt-3">
+                      <div className="mb-4">
+                          <Skeleton width="100%" height="10rem" borderRadius="6px" className="mb-5" />
+                          <Skeleton width="100%" height="2.5rem" borderRadius="6px" className="mb-5" />
+                          <Skeleton width="100%" height="20rem" className="mb-1" />
+                      </div>
 
-      <Dialog 
-        header="Confirm Cancellation"
-        visible={confirmCancelledVisible}
-        onHide={() => setConfirmCancelledVisible(false)}
-        style={{ width: '450px' }}
-        modal
-        footer={
-          <div>
-            <Button 
-              label="No" 
-              icon="pi pi-times" 
-              onClick={() => setConfirmCancelledVisible(false)} 
-              className="p-button-text" 
-            />
-            <Button 
-              label="Yes" 
-              icon="pi pi-check" 
-              onClick={() => {
-                setConfirmCancelledVisible(false);
-                handleCancelled();
-              }} 
-              autoFocus 
-            />
-          </div>
-        }
-      >
-        <div className="flex align-items-center justify-content-center">
-          <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-          <span>
-            Are you sure you want to mark {quantity} items as cancelled?
-          </span>
-        </div>
-      </Dialog>
-    </div>
+                      <div className="grid">
+                          <div className="col-12 md:col-4 mb-2">
+                              <Skeleton width="100%" height="2.5rem" borderRadius="6px" />
+                          </div>
+                          <div className="col-12 md:col-4 mb-2">
+                              <Skeleton width="100%" height="2.5rem" borderRadius="6px" />
+                          </div>
+                          <div className="col-12 md:col-4 mb-2">
+                              <Skeleton width="100%" height="2.5rem" borderRadius="6px" />
+                          </div>
+                      </div>
+                  </div>
+              ) : selectedOrder ? (
+                  <div className="p-fluid mt-3">
+                      <div className="grid">
+                          <div className="col-6">
+                              <div className="field">
+                                  <label>Customer</label>
+                                  <p className="m-0 font-medium">{selectedOrder?.user?.fname}</p>
+                              </div>
+                          </div>
+                          <div className="col-6">
+                              <div className="field">
+                                  <label>Order Date</label>
+                                  <p className="m-0 font-medium">{formatDate(new Date(selectedOrder.order_date))}</p>
+                              </div>
+                          </div>
+                          <div className="col-6">
+                              <div className="field">
+                                  <label>Status</label>&nbsp;
+                                  <Tag
+                                      value={selectedOrder.orderStatus?.status_name || 'Unknown'}
+                                      severity={getStatusSeverity(selectedOrder.orderStatus?.status_name) || undefined}
+                                      className="text-sm font-semibold"
+                                      style={{ minWidth: '6rem', textAlign: 'center' }}
+                                  />
+                              </div>
+                          </div>
+                          <div className="col-6">
+                              <div className="field">
+                                  <label>Trial Date</label>
+                                  <p className="m-0 font-medium">{selectedOrder.orderDetails?.some((item) => item.trial_date) ? formatDate(new Date(selectedOrder.orderDetails.find((item) => item.trial_date)?.trial_date || '')) : 'Not scheduled'}</p>
+                              </div>
+                          </div>
+                          <div className="col-12">
+                              <div className="flex gap-2 mt-3">
+                                  <Button label="Receive Payment" icon="pi pi-wallet" onClick={handlePaymentClick} disabled={selectedOrder?.amt_due === 0 || selectedOrder?.amt_due === undefined} />
+                                  <Button icon={loadingPaymentHistory ? 'pi pi-spin pi-spinner' : 'pi pi-history'} style={{ width: '20%' }} onClick={handleViewPaymentHistory} className="p-button-secondary" disabled={loadingPaymentHistory} />
+                              </div>
+                          </div>
+                      </div>
+
+                      <Divider />
+
+                      <h5 className="m-0 mb-3">Order Items</h5>
+
+                      {selectedOrder.orderDetails?.map((item) => (
+                          <div key={item.id} className="mb-4 surface-50 p-3 border-round">
+                              <div className="grid">
+                                  <div className="col-6">
+                                      <div className="field">
+                                          <label>Item Ref</label>
+                                          <p className="m-0 font-medium">{item.item_ref || 'Not Available'}</p>
+                                      </div>
+                                  </div>
+                                  <div className="col-6">
+                                      <div className="field">
+                                          <label>Job Order No</label>
+                                          <p className="m-0 font-medium">{item.order_id}</p>
+                                      </div>
+                                  </div>
+                                  <div className="col-6">
+                                      <div className="field">
+                                          <label>Item Name</label>
+                                          <p className="m-0 font-medium">{item.material?.name || 'Not Available'}</p>
+                                      </div>
+                                  </div>
+                                  <div className="col-6">
+                                      <div className="field">
+                                          <label>Jobber Name</label>
+                                          <p className="m-0 font-medium">{item.jobOrderDetails?.[0]?.adminSite?.sitename || 'Not assigned'}</p>
+                                      </div>
+                                  </div>
+                                  <div className="col-6">
+                                      <div className="field">
+                                          <label>Trial Date</label>
+                                          <p className="m-0 font-medium">{item.trial_date ? formatDate(new Date(item.trial_date)) : 'Not scheduled'}</p>
+                                      </div>
+                                  </div>
+                                  <div className="col-6">
+                                      <div className="field">
+                                          <label>Amount</label>
+                                          <p className="m-0 font-medium">₹ {item.item_amt || 0}</p>
+                                      </div>
+                                  </div>
+                                  <div className="col-12 mt-2">
+                                      <div className="grid align-items-start">
+                                          <div className="col-9">
+                                              <div className="field">
+                                                  <label>Notes</label>
+                                                  <p className="m-0 font-medium">{item.desc1 || 'No Notes Available'}</p>
+                                              </div>
+                                          </div>
+                                          <div className="col-3 flex justify-content-end pt-4">
+                                              <Button icon="pi pi-pencil" onClick={() => handleEditOrderDetail(item)} className="p-button-rounded p-button" />
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <div className="col-12 mt-2">
+                                      <Button
+                                          label={`Status (${item.orderStatus?.status_name || 'Unknown'})`}
+                                          icon="pi pi-sync"
+                                          onClick={() => {
+                                              setSelectedDetail(item);
+                                              setStatusSidebarVisible(true);
+                                          }}
+                                          severity={getStatusSeverity(item.orderStatus?.status_name) || undefined}
+                                      />
+                                  </div>
+
+                                  {item?.image_url && item.image_url.length > 0 && (
+                                      <div className="col-12 mt-2">
+                                          <Button label={`View Images (${item.image_url.length})`} icon="pi pi-image" className="p-button-outlined" onClick={() => handleImagePreview(item.image_url)} />
+                                      </div>
+                                  )}
+
+                                  <div className="col-12 mt-2">
+                                      <Button label="View Measurement Details" icon="pi pi-eye" className="p-button-outlined" onClick={() => handleViewMeasurement(item)} />
+                                  </div>
+
+                                  <div className="col-12 mt-2">
+                                      <Button label="Update Status" icon="pi pi-pencil" onClick={() => openItemActionSidebar(item)} className="w-full" />
+                                  </div>
+                                  <Divider />
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                  <div className="flex justify-content-center align-items-center" style={{ height: '200px' }}>
+                      <p>No order details available</p>
+                  </div>
+              )}
+          </Dialog>
+
+          <Dialog visible={imagePreviewVisible} onHide={() => setImagePreviewVisible(false)} style={{ width: '90vw' }}>
+              <Galleria
+                  value={images}
+                  activeIndex={activeImageIndex}
+                  onItemChange={(e) => setActiveImageIndex(e.index)}
+                  showThumbnails={false}
+                  showIndicators={images.length > 1}
+                  showItemNavigators={images.length > 1}
+                  item={itemTemplate}
+                  thumbnail={thumbnailTemplate}
+                  style={{ width: '100%' }}
+              />
+          </Dialog>
+
+          <Dialog
+              header="Receive Payment"
+              visible={paymentDialogVisible}
+              onHide={() => setPaymentDialogVisible(false)}
+              maximized={isMaximized}
+              onMaximize={(e) => setIsMaximized(e.maximized)}
+              className={isMaximized ? 'maximized-dialog' : ''}
+              blockScroll
+          >
+              <div className="p-fluid">
+                  <div className="field my-4">
+                      <label htmlFor="amount" className="font-bold block mb-2">
+                          Payment Amount (₹)
+                      </label>
+                      <InputText
+                          id="amount"
+                          type="number"
+                          className="w-full"
+                          placeholder="Enter amount"
+                          value={paymentForm.amount}
+                          onChange={(e) => {
+                              const enteredAmount = parseFloat(e.target.value) || 0;
+                              const maxAllowed = selectedOrder?.amt_due || 0;
+                              if (enteredAmount <= maxAllowed) {
+                                  setPaymentForm({ ...paymentForm, amount: e.target.value });
+                              } else {
+                                  Toast.show({
+                                      text: `Amount cannot exceed ₹${maxAllowed}`,
+                                      duration: 'short',
+                                      position: 'bottom'
+                                  });
+                                  setPaymentForm({ ...paymentForm, amount: maxAllowed.toString() });
+                              }
+                          }}
+                          max={selectedOrder?.amt_due}
+                      />
+                  </div>
+
+                  <div className="field mb-4">
+                      <label htmlFor="paymentDate" className="font-bold block mb-2">
+                          Payment Date
+                      </label>
+                      <Calendar
+                          id="paymentDate"
+                          value={new Date(paymentForm.paymentDate)}
+                          onChange={(e) => setPaymentForm({ ...paymentForm, paymentDate: e.value?.toISOString().split('T')[0] || '' })}
+                          dateFormat="dd-mm-yy"
+                          showIcon
+                          className="w-full"
+                      />
+                  </div>
+
+                  <div className="field mb-4">
+                      <label htmlFor="paymentMethod" className="font-bold block mb-2">
+                          Payment Method
+                      </label>
+                      <Dropdown
+                          id="paymentMethod"
+                          value={paymentForm.paymentMethod}
+                          options={paymentModes.map((mode) => ({
+                              label: mode.mode_name,
+                              value: mode.id
+                          }))}
+                          optionLabel="label"
+                          placeholder={paymentModes.length ? 'Select payment method' : 'Loading payment methods...'}
+                          className="w-full"
+                          onChange={(e) => setPaymentForm({ ...paymentForm, paymentMethod: e.value })}
+                          disabled={!paymentModes.length}
+                      />
+                  </div>
+
+                  <div className="field mb-4">
+                      <label htmlFor="reference" className="font-bold block mb-2">
+                          Reference/Note
+                      </label>
+                      <InputText id="reference" className="w-full" placeholder="Enter reference or note" value={paymentForm.reference} onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })} />
+                  </div>
+
+                  <div className="flex justify-content-end gap-2 mt-4">
+                      <Button
+                          label="Cancel"
+                          icon="pi pi-times"
+                          className="p-button-secondary"
+                          onClick={() => {
+                              setPaymentDialogVisible(false);
+                              setPaymentForm({
+                                  amount: '',
+                                  paymentDate: new Date().toISOString().split('T')[0],
+                                  reference: '',
+                                  paymentMethod: ''
+                              });
+                          }}
+                      />
+                      <Button
+                          label="Confirm"
+                          icon="pi pi-check"
+                          className="p-button-success"
+                          onClick={handlePaymentSubmit}
+                          disabled={!paymentForm.amount || !paymentForm.paymentDate || !paymentForm.paymentMethod || parseFloat(paymentForm.amount) > (selectedOrder?.amt_due || 0)}
+                      />
+                  </div>
+              </div>
+          </Dialog>
+
+          <Sidebar
+              visible={paymentHistorySidebarVisible}
+              onHide={() => setPaymentHistorySidebarVisible(false)}
+              position="bottom"
+              style={{
+                  width: '100vw',
+                  height: '68vh',
+                  maxHeight: '68vh',
+                  borderTopLeftRadius: '12px',
+                  borderTopRightRadius: '12px',
+                  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)'
+              }}
+              className="custom-selector-sidebar"
+              header={
+                  <div className="flex align-items-center gap-2">
+                      <span className="font-bold text-xl">Payment History</span>
+                  </div>
+              }
+          >
+              {loadingPaymentHistory ? (
+                  <div className="flex justify-content-center p-4">
+                      <ProgressSpinner style={{ width: '50px', height: '50px' }} strokeWidth="4" />
+                  </div>
+              ) : paymentHistory.length > 0 ? (
+                  <div className="flex flex-column gap-2 p-2">
+                      {paymentHistory.map((payment, index) => (
+                          <div key={index} className="flex justify-content-between align-items-center border-1 surface-border p-3 border-round">
+                              <div className="text-sm">
+                                  <div className="text-500">Date</div>
+                                  <div className="font-medium">{new Date(payment.payment_date).toLocaleDateString('en-IN')}</div>
+                              </div>
+                              <div className="text-sm text-right">
+                                  <div className="text-500">Amount</div>
+                                  <div className="font-medium">₹{payment.payment_amt}</div>
+                              </div>
+                              <div className="text-sm text-right">
+                                  <div className="text-500">Method</div>
+                                  <div className="font-medium">{payment.paymentMode?.mode_name || payment.payment_type || 'Unknown'}</div>
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+              ) : (
+                  <div className="flex flex-column align-items-center justify-content-center p-5">
+                      <i className="pi pi-info-circle text-2xl mb-2"></i>
+                      <p className="text-500 m-0">No payment history found</p>
+                  </div>
+              )}
+          </Sidebar>
+
+          <Sidebar
+              visible={itemActionSidebarVisible}
+              onHide={() => setItemActionSidebarVisible(false)}
+              position="bottom"
+              style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '80vh',
+                  borderTopLeftRadius: '12px',
+                  borderTopRightRadius: '12px',
+                  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)'
+              }}
+              className="custom-item-action-sidebar"
+              header={
+                  <div className="sticky top-0 bg-white z-1 p-3 surface-border flex justify-content-between align-items-center">
+                      <span className="font-bold text-xl mr-2">{/* {selectedDetail?.material?.name || 'Item Actions'} */}</span>
+                      <span className="text-sm text-500">Max: {selectedDetail ? selectedDetail.ord_qty - selectedDetail.delivered_qty - selectedDetail.cancelled_qty : 0}</span>
+                  </div>
+              }
+              blockScroll
+          >
+              {selectedDetail && (
+                  <div className="p-3">
+                      <div className="field mb-4">
+                          <label className="font-bold block mb-2">Quantity</label>
+                          <div className="flex align-items-center justify-content-between bg-gray-100 p-2 border-round">
+                              <Button icon="pi pi-minus" onClick={() => handleStatusQuantityChange(quantity - 1)} className="p-button-rounded p-button-text" disabled={quantity <= 1} />
+                              <InputText
+                                  value={String(quantity)}
+                                  onChange={(e) => {
+                                      const newValue = parseInt(e.target.value) || 1;
+                                      const maxQty = selectedDetail.ord_qty - selectedDetail.delivered_qty - selectedDetail.cancelled_qty;
+                                      handleStatusQuantityChange(Math.min(newValue, maxQty));
+                                  }}
+                                  className="text-center mx-2 bg-white"
+                                  style={{ width: '60px' }}
+                                  keyfilter="int"
+                              />
+                              <Button
+                                  icon="pi pi-plus"
+                                  onClick={() => handleStatusQuantityChange(quantity + 1)}
+                                  className="p-button-rounded p-button-text"
+                                  disabled={quantity >= selectedDetail.ord_qty - selectedDetail.delivered_qty - selectedDetail.cancelled_qty}
+                              />
+                          </div>
+                      </div>
+
+                      <div className="flex gap-2 w-full">
+                          <Button label="Cancelled" icon="pi pi-times" onClick={() => setConfirmCancelledVisible(true)} className="flex-grow-1 p-button-danger" />
+                          <Button label="Delivered" icon="pi pi-check" onClick={() => setConfirmDeliveredVisible(true)} className="flex-grow-1 p-button-success" />
+                      </div>
+                  </div>
+              )}
+          </Sidebar>
+
+          <Sidebar
+              visible={statusSidebarVisible}
+              onHide={() => setStatusSidebarVisible(false)}
+              position="bottom"
+              style={{
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '62vh',
+                  borderTopLeftRadius: '12px',
+                  borderTopRightRadius: '12px',
+                  boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)'
+              }}
+              header={
+                  <div className="sticky top-0 bg-white z-1 p-3 border-bottom-1 surface-border flex justify-content-between align-items-center">
+                      <span className="font-bold text-xl">Update Item Status</span>
+                  </div>
+              }
+              className="p-0"
+          >
+              <div className="p-3">
+                  <div className="grid">
+                      {availableStatuses.map((status) => (
+                          <div key={status.id} className="col-12 md:col-6 lg:col-4 p-2">
+                              <Button
+                                  label={status.name}
+                                  onClick={() => handleItemStatusUpdate(parseInt(status.id))}
+                                  severity={getStatusSeverity(status.name) || undefined}
+                                  className="w-full p-3 text-lg justify-content-start p-button-outlined"
+                                  icon={
+                                      status.name === 'Completed'
+                                          ? 'pi pi-check-circle'
+                                          : status.name === 'In Progress'
+                                          ? 'pi pi-spinner'
+                                          : status.name === 'Pending'
+                                          ? 'pi pi-clock'
+                                          : status.name === 'Cancelled'
+                                          ? 'pi pi-times-circle'
+                                          : 'pi pi-info-circle'
+                                  }
+                              />
+                          </div>
+                      ))}
+                  </div>
+              </div>
+          </Sidebar>
+
+          <Dialog
+              header="Edit Order Details"
+              visible={editOrderDetailDialogVisible}
+              onHide={() => setEditOrderDetailDialogVisible(false)}
+              maximized={isMaximized}
+              onMaximize={(e) => setIsMaximized(e.maximized)}
+              className={isMaximized ? 'maximized-dialog' : ''}
+              blockScroll
+              footer={
+                  <div>
+                      <Button label="Update" icon="pi pi-check" onClick={handleUpdateOrderDetail} autoFocus className="w-full" loading={isSavingDetails} disabled={isSavingDetails} />
+                  </div>
+              }
+          >
+              {selectedOrderDetail && (
+                  <div className="p-fluid my-4">
+                      <div className="field">
+                          <label htmlFor="trialDate">Trial Date</label>
+                          <Calendar
+                              id="trialDate"
+                              value={selectedOrderDetail?.trial_date ? new Date(selectedOrderDetail.trial_date) : null}
+                              onChange={(e) => {
+                                  if (!selectedOrderDetail) return;
+                                  setSelectedOrderDetail({
+                                      ...selectedOrderDetail,
+                                      trial_date: e.value ? e.value.toISOString() : null
+                                  });
+                              }}
+                              dateFormat="dd/mm/yy"
+                              showTime
+                              hourFormat="12"
+                              showIcon
+                              placeholder="Select Trial Date & Time"
+                              minDate={new Date()}
+                          />
+                      </div>
+
+                      <div className="field">
+                          <label htmlFor="deliveryDate">Delivery Date</label>
+                          <Calendar
+                              id="deliveryDate"
+                              value={selectedOrderDetail?.delivery_date ? new Date(selectedOrderDetail.delivery_date) : null}
+                              onChange={(e) => {
+                                  if (!selectedOrderDetail) return;
+                                  setSelectedOrderDetail({
+                                      ...selectedOrderDetail,
+                                      delivery_date: e.value ? e.value.toISOString() : null
+                                  });
+                              }}
+                              dateFormat="dd/mm/yy"
+                              showTime
+                              hourFormat="12"
+                              showIcon
+                              placeholder="Select Delivery Date & Time"
+                              minDate={new Date()}
+                          />
+                      </div>
+
+                      <div className="field">
+                          <label htmlFor="itemAmt">Item Amount</label>
+                          <InputNumber
+                              id="itemAmt"
+                              value={selectedOrderDetail.item_amt}
+                              onValueChange={(e) =>
+                                  setSelectedOrderDetail({
+                                      ...selectedOrderDetail,
+                                      item_amt: e.value || 0
+                                  })
+                              }
+                              mode="currency"
+                              currency="INR"
+                              locale="en-IN"
+                          />
+                      </div>
+
+                      <div className="field">
+                          <label htmlFor="ordQty">Order Qty</label>
+                          <InputNumber
+                              id="ordQty"
+                              value={selectedOrderDetail.ord_qty}
+                              onValueChange={(e) =>
+                                  setSelectedOrderDetail({
+                                      ...selectedOrderDetail,
+                                      ord_qty: e.value || 0
+                                  })
+                              }
+                              min={0}
+                          />
+                      </div>
+
+                      <div className="field">
+                          <label htmlFor="desc1">Special Instruction</label>
+                          <InputTextarea
+                              id="desc1"
+                              value={selectedOrderDetail.desc1 || ''}
+                              onChange={(e) =>
+                                  setSelectedOrderDetail({
+                                      ...selectedOrderDetail,
+                                      desc1: e.target.value
+                                  })
+                              }
+                              rows={4}
+                              autoResize
+                          />
+                      </div>
+                  </div>
+              )}
+          </Dialog>
+
+          <Dialog
+              header={
+                  <div className="flex align-items-center w-full">
+                      <span>Measurement Details</span>
+                      <Button icon="pi pi-pencil" onClick={handleEditMeasurement} className="p-button-rounded p-button-text" disabled={!measurementData} style={{ marginLeft: '0.5rem' }} />
+                  </div>
+              }
+              visible={measurementDialogVisible}
+              onHide={() => {
+                  setMeasurementDialogVisible(false);
+                  setMeasurementData(null);
+              }}
+              maximized={isMaximized}
+              onMaximize={(e) => setIsMaximized(e.maximized)}
+              className={isMaximized ? 'maximized-dialog' : ''}
+              blockScroll
+          >
+              {selectedItem && (
+                  <div className="p-fluid">
+                      <div className="grid my-2">
+                          <div className="col-6 font-bold text-600">Customer Name:</div>
+                          <div className="col-6 font-medium text-right">{selectedOrder?.user?.fname}</div>
+
+                          <div className="col-6 font-bold text-600">Delivery Date:</div>
+                          <div className="col-6 font-medium text-right">{selectedItem.delivery_date ? formatDate(new Date(selectedItem.delivery_date)) : 'Not scheduled'}</div>
+
+                          <div className="col-6 font-bold text-600">Trial Date:</div>
+                          <div className="col-6 font-medium text-right">{selectedItem.trial_date ? formatDate(new Date(selectedItem.trial_date)) : 'Not scheduled'}</div>
+                      </div>
+
+                      {loadingMeasurements ? (
+                          <div className="surface-100 p-3 border-round my-4">
+                              <div className="flex align-items-center gap-3">
+                                  <Skeleton shape="circle" size="2rem" />
+                                  <div className="flex flex-column gap-2 w-full">
+                                      <Skeleton width="100%" height="1.5rem" />
+                                      <Skeleton width="50%" height="1rem" />
+                                  </div>
+                              </div>
+                              {[...Array(4)].map((_, i) => (
+                                  <div key={i} className="grid my-3">
+                                      <div className="col-6">
+                                          <Skeleton width="80%" height="1.5rem" />
+                                      </div>
+                                      <div className="col-6">
+                                          <Skeleton width="60%" height="1.5rem" className="float-right" />
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      ) : measurementData && measurementData.measurementDetails?.length > 0 ? (
+                          <>
+                              <div className="surface-100 p-3 border-round my-4">
+                                  <h4 className="m-0">Measurements</h4>
+                                  <p className="text-sm mt-1">Taken on: {new Date(measurementData.measurement_date).toLocaleString()}</p>
+                              </div>
+
+                              <div className="grid mb-4">
+                                  {measurementData.measurementDetails.map((detail, index) => (
+                                      <div key={index} className="col-12 md:col-6">
+                                          <div className="flex justify-content-between align-items-center p-3 border-bottom-1 surface-border">
+                                              <span className="font-medium">{detail.measurementMaster.measurement_name}</span>
+                                              <span className="font-bold">{detail.measurement_val}</span>
+                                          </div>
+                                      </div>
+                                  ))}
+                              </div>
+                          </>
+                      ) : (
+                          <div className="surface-100 p-3 border-round my-4 text-center">
+                              <i className="pi pi-info-circle text-2xl mb-2" />
+                              <p className="m-0">No measurement details available</p>
+                          </div>
+                      )}
+
+                      <div className="surface-50 p-3 border-round">
+                          <h5 className="mt-0 mb-3">Stitch Options</h5>
+                          {loadingMeasurements ? (
+                              <div className="grid">
+                                  {[...Array(4)].map((_, i) => (
+                                      <div key={i} className="col-6">
+                                          <Skeleton width="80%" height="1.5rem" className="mb-2" />
+                                      </div>
+                                  ))}
+                              </div>
+                          ) : (
+                              <div className="grid">
+                                  <div className="col-6 font-bold text-600">Collar:</div>
+                                  <div className="col-6 font-medium text-right">{measurementData ? 'Classic' : 'No details available'}</div>
+
+                                  <div className="col-6 font-bold text-600">Sleeve:</div>
+                                  <div className="col-6 font-medium text-right">{measurementData ? 'Full' : 'No details available'}</div>
+
+                                  <div className="col-6 font-bold text-600">Cuffs:</div>
+                                  <div className="col-6 font-medium text-right">{measurementData ? 'Squared' : 'No details available'}</div>
+
+                                  <div className="col-6 font-bold text-600">Pocket Type:</div>
+                                  <div className="col-6 font-medium text-right">{measurementData ? 'Classic' : 'No details available'}</div>
+                              </div>
+                          )}
+                      </div>
+                  </div>
+              )}
+          </Dialog>
+
+          <Dialog
+              header="Edit Measurement Details"
+              visible={editMeasurementDialogVisible}
+              onHide={() => setEditMeasurementDialogVisible(false)}
+              maximized={isMaximized}
+              onMaximize={(e) => setIsMaximized(e.maximized)}
+              className={isMaximized ? 'maximized-dialog' : ''}
+              blockScroll
+              footer={
+                  <div>
+                      <Button label="Update" icon="pi pi-check" onClick={saveEditedMeasurements} autoFocus className="w-full" loading={isSaving} disabled={isSaving} />
+                  </div>
+              }
+          >
+              <div className="p-fluid">
+                  {editedMeasurements.map((measurement) => {
+                      const measurementDetail = measurementData?.measurementDetails.find((detail) => detail.measurementMaster.id === measurement.id);
+
+                      const dataType = measurementDetail?.measurementMaster.data_type || 'text';
+
+                      return (
+                          <div key={measurement.id} className="field my-3">
+                              <label htmlFor={`measurement-${measurement.id}`} className="font-bold block mb-1">
+                                  {measurement.name} <span className="text-500 font-normal">({dataType})</span>
+                              </label>
+                              <InputText id={`measurement-${measurement.id}`} value={measurement.value} onChange={(e) => handleMeasurementValueChange(measurement.id, e.target.value)} className="w-full" />
+                          </div>
+                      );
+                  })}
+              </div>
+          </Dialog>
+
+          <Dialog
+              header="Confirm Delivery"
+              visible={confirmDeliveredVisible}
+              onHide={() => setConfirmDeliveredVisible(false)}
+              style={{ width: '450px' }}
+              modal
+              footer={
+                  <div>
+                      <Button label="No" icon="pi pi-times" onClick={() => setConfirmDeliveredVisible(false)} className="p-button-text" />
+                      <Button
+                          label="Yes"
+                          icon="pi pi-check"
+                          onClick={() => {
+                              setConfirmDeliveredVisible(false);
+                              handleDelivered();
+                          }}
+                          autoFocus
+                      />
+                  </div>
+              }
+          >
+              <div className="flex align-items-center justify-content-center">
+                  <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                  <span>Are you sure you want to mark {quantity} items as delivered?</span>
+              </div>
+          </Dialog>
+
+          <Dialog
+              header="Confirm Cancellation"
+              visible={confirmCancelledVisible}
+              onHide={() => setConfirmCancelledVisible(false)}
+              style={{ width: '450px' }}
+              modal
+              footer={
+                  <div>
+                      <Button label="No" icon="pi pi-times" onClick={() => setConfirmCancelledVisible(false)} className="p-button-text" />
+                      <Button
+                          label="Yes"
+                          icon="pi pi-check"
+                          onClick={() => {
+                              setConfirmCancelledVisible(false);
+                              handleCancelled();
+                          }}
+                          autoFocus
+                      />
+                  </div>
+              }
+          >
+              <div className="flex align-items-center justify-content-center">
+                  <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                  <span>Are you sure you want to mark {quantity} items as cancelled?</span>
+              </div>
+          </Dialog>
+      </div>
   );
 };
 

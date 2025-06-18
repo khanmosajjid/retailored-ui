@@ -1,6 +1,6 @@
 .layout-sidebar {
     position: fixed;
-    width: 300px;
+    width: 260px;
     height: calc(100vh - 9rem);
     z-index: 999;
     overflow-y: auto;
@@ -153,4 +153,7 @@
     overflow: hidden;
     max-height: 0 !important;
     transition: max-height 0.45s cubic-bezier(0, 1, 0, 1);
+}
+.search-box{
+    width: 60% !important;
 }

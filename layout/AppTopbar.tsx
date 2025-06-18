@@ -29,18 +29,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
 
     return (
         <div className="layout-topbar">
-            <Link href="/" className="layout-topbar-logo">
-                <img src="/layout/images/reTailoredLogo.jpg" alt="logo" />
-                <span>reTailored</span>
-            </Link>
-
             {!isMobile && (
-                <button 
-                    ref={menubuttonRef} 
-                    type="button" 
-                    className="p-link layout-menu-button layout-topbar-button" 
-                    onClick={onMenuToggle}
-                >
+                <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
                     <i className="pi pi-bars" />
                 </button>
             )}
@@ -49,12 +39,13 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
                 <i className="pi pi-ellipsis-v" />
             </button>
 
+            <Link href="/" className="layout-topbar-logo">
+                <img src="/layout/images/reTailoredLogo.jpg" alt="logo" />
+                <span>reTailored</span>
+            </Link>
+
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                <button 
-                    type="button" 
-                    className="p-link layout-topbar-button"
-                    onClick={handleLogout}
-                >
+                <button type="button" className="p-link layout-topbar-button" onClick={handleLogout}>
                     <i className="pi pi-power-off"></i>
                     <span>Logout</span>
                 </button>

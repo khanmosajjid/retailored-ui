@@ -252,76 +252,60 @@ const Dashboard = () => {
     );
 
     return (
-        <div className="grid">
+        <div className="grid" style={{ gridAutoRows: '1fr' }}>
             <div className="col-12 lg:col-6 xl:col-4">
-                <div className="card mb-0">
-                    {renderStatCard("This Week's Delivery (Qty)", dashboardData.ordersThisWeek, "pi-check-circle", "#00bb7e")}
-                </div>
+                <div className="card mb-0 h-full">{renderStatCard("This Week's Delivery (Qty)", dashboardData.ordersThisWeek, 'pi-check-circle', '#00bb7e')}</div>
             </div>
-            
+
             <div className="col-12 lg:col-6 xl:col-4">
-                <div className="card mb-0">
-                    {renderStatCard("Delayed Job Orders (Qty)", dashboardData.pendingJobOrderCount, "pi-exclamation-triangle", "#f87171")}
-                </div>
+                <div className="card mb-0 h-full">{renderStatCard('Delayed Job Orders (Qty)', dashboardData.pendingJobOrderCount, 'pi-exclamation-triangle', '#f87171')}</div>
             </div>
-            
+
             <div className="col-12 lg:col-6 xl:col-4">
                 <Link href="/pages/reports/pending-sales">
-                    <div className="card mb-0 cursor-pointer hover:shadow-2 transition-duration-150">
-                        {renderStatCard("Total Pending Orders", dashboardData.pendingSalesOrderCount, "pi-clock", "#fb923c")}
-                    </div>
+                    <div className="card mb-0 h-full cursor-pointer hover:shadow-2 transition-duration-150">{renderStatCard('Total Pending Orders', dashboardData.pendingSalesOrderCount, 'pi-clock', '#fb923c')}</div>
                 </Link>
             </div>
-            
+
             <div className="col-12 lg:col-6 xl:col-4">
                 <Link href="/pages/reports/pending-jobs">
-                    <div className="card mb-0 cursor-pointer hover:shadow-2 transition-duration-150">
-                        {renderStatCard("Job Orders", dashboardData.jobOrderCount, "pi-briefcase", "#3b82f6")}
-                    </div>
+                    <div className="card mb-0 h-full cursor-pointer hover:shadow-2 transition-duration-150">{renderStatCard('Job Orders', dashboardData.jobOrderCount, 'pi-briefcase', '#3b82f6')}</div>
                 </Link>
             </div>
-            
+
             <div className="col-12 lg:col-6 xl:col-4">
-                <div className="card mb-0">
+                <div className="card mb-0 h-full">
                     {renderListCard(
-                        "Customers This Week", 
-                        dashboardData.orderDetailsThisWeek.map(c => c.sitename), 
-                        "pi-users", 
-                        "#8b5cf6"
+                        'Customers This Week',
+                        dashboardData.orderDetailsThisWeek.map((c) => c.sitename),
+                        'pi-users',
+                        '#8b5cf6'
                     )}
                 </div>
             </div>
-            
+
             <div className="col-12 lg:col-6 xl:col-4">
-                <div className="card mb-0">
+                <div className="card mb-0 h-full">
                     {renderListCard(
-                        "Jobbers This Week", 
-                        dashboardData.jobOrderDetailsThisWeek.map(j => j.sitename), 
-                        "pi-wrench", 
-                        "#06b6d4"
+                        'Jobbers This Week',
+                        dashboardData.jobOrderDetailsThisWeek.map((j) => j.sitename),
+                        'pi-wrench',
+                        '#06b6d4'
                     )}
                 </div>
             </div>
 
             <div className="col-12 xl:col-6">
-                <div className="card">
+                <div className="card h-full">
                     <h5>Weekly Deliveries</h5>
-                    {loading ? (
-                        <Skeleton width="100%" height="300px" />
-                    ) : (
-                        <Chart type="line" data={deliveryData} options={lineOptions} />
-                    )}
+                    {loading ? <Skeleton width="100%" height="300px" /> : <Chart type="line" data={deliveryData} options={lineOptions} />}
                 </div>
             </div>
-            
+
             <div className="col-12 xl:col-6">
-                <div className="card">
+                <div className="card h-full">
                     <h5>Orders Overview</h5>
-                    {loading ? (
-                        <Skeleton width="100%" height="300px" />
-                    ) : (
-                        <Chart type="bar" data={ordersData} options={barOptions} />
-                    )}
+                    {loading ? <Skeleton width="100%" height="300px" /> : <Chart type="bar" data={ordersData} options={barOptions} />}
                 </div>
             </div>
         </div>
